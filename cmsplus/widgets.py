@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 from django.forms import Widget
 from django.forms.utils import flatatt
 from django.utils.html import escape, mark_safe, strip_spaces_between_tags
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 
-
+# TODO: Remove
 class KeyValueWidget(Widget):
     """
     A widget that displays key/value pairs from JSON as a list of text input

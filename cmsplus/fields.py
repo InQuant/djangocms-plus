@@ -2,7 +2,7 @@ import json
 import logging
 import re
 from abc import abstractmethod, ABC
-
+from datetime import datetime
 from cms.models.pagemodel import Page
 from cms.utils import get_current_site
 from django import forms
@@ -12,14 +12,12 @@ from django.core.exceptions import ValidationError, ObjectDoesNotExist
 from django.core.validators import ProhibitNullCharactersValidator, RegexValidator
 from django.db.models.fields.related import ManyToOneRel
 from django.forms.fields import Field
-from django.utils.datetime_safe import datetime
 from django.utils.deconstruct import deconstructible
-from django.utils.translation import ugettext_lazy as _, ugettext
+from django.utils.translation import gettext_lazy as _, gettext
 from filer.fields.file import AdminFileWidget, FilerFileField
 from filer.fields.image import FilerImageField
 from filer.models.filemodels import File as FilerFileModel
 from filer.models.imagemodels import Image as FilerImageModel
-from six import string_types, u
 
 from cmsplus.widgets import KeyValueWidget
 
@@ -43,7 +41,7 @@ class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixI
     def deserialize_field(self, value: list):
         if value is None:
             return None
-        return self.queryset.filter(pk__in=value)
+        return self.queryset.filter(pk__in=value["p_keys"])
 
 
 class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
@@ -54,7 +52,7 @@ class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
         if value is None:
             return None
         try:
-            return self.queryset.get(pk=value)
+            return self.queryset.get(pk=value["pk"])
         except ObjectDoesNotExist as e:
             raise ValidationError('PlusModelChoiceField Deserialization Error: Could not find %s object with pk %s' %
                                   (self.queryset.model.__name__, value))
@@ -174,7 +172,7 @@ class SizeUnitValidator:
             return
         match = self.validation_pattern.match(value)
         if not (match and match.group(1).isdigit()):
-            allowed_units = " {} ".format(ugettext("or")).join("'{}'".format(u) for u in self.allowed_units)
+            allowed_units = " {} ".format(gettext("or")).join("'{}'".format(u) for u in self.allowed_units)
             params = {'value': value, 'allowed_units': allowed_units}
             raise ValidationError(self.message, code=self.code, params=params)
 
@@ -228,12 +226,12 @@ class KeyValueField(forms.CharField):
         super().__init__(*args, **kwargs)
 
     def to_python(self, value):
-        if isinstance(value, string_types) and value:
+        if isinstance(value, str) and value:
             try:
                 return json.loads(value)
             except ValueError as exc:
                 raise forms.ValidationError(
-                    'JSON decode error: %s' % (u(exc.args[0]),)
+                    f'JSON decode error: {exc}'
                 )
         else:
             return value

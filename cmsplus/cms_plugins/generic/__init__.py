@@ -5,7 +5,7 @@ from django import template
 from django.forms import widgets
 from django.template.context import Context
 from django.utils.safestring import mark_safe
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import SizeField, PlusFilerFileSearchField
@@ -14,7 +14,7 @@ from cmsplus.forms import (PlusPluginFormBase, LinkFormBase,
 from cmsplus.models import (PlusPlugin, LinkPluginMixin, )
 from cmsplus.plugin_base import (StylePluginMixin, PlusPluginBase, LinkPluginBase)
 
-
+''' TODO - remove!
 # TextLinkPlugin
 # --------------
 #
@@ -384,3 +384,5 @@ class AudioEmbedPlugin(StylePluginMixin, PlusPluginBase):
     render_template = 'cmsplus/generic/audio-embed.html'
     footnote_html = """Renders HTML Audioplayer from a playable file url. 
 """
+
+'''

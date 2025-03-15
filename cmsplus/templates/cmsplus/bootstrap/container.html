@@ -1,1 +1,15 @@
-{% extends "cmsplus/bootstrap/wrapper.html" %}
+{% load cms_tags %}
+
+<{{ instance.tag_type }}{{ instance.get_attributes }}>
+    {% for plugin in instance.child_plugin_instances %}
+        {% with parentloop=forloop parent=instance %}{% render_plugin plugin %}{% endwith %}
+    {% empty %}{{ instance.simple_content }}{% endfor %}
+</{{ instance.tag_type }}>
+
+{% if instance.image %}
+    {% include 'cmsplus/bootstrap/background-image/_bg_img_src_set.html' with imgwidths=bgimgwidths %}
+{% endif %}
+
+{% if instance.glossary.extra_css %}
+  {% include "cmsplus/includes/_extra_css.html" %}
+{% endif %}

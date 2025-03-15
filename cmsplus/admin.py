@@ -7,7 +7,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.urls import path
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from cmsplus.utils import generate_plugin_tree
 from cmsplus.utils import plus_add_plugin

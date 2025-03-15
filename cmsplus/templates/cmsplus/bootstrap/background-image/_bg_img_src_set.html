@@ -1,25 +1,27 @@
 {% load sekizai_tags thumbnail %}
 
-{% with id=id img=img imgwidths=imgwidths crop=crop upscale=upscale after=after %}
+{% with id=instance.id img=instance.image f=instance.image_filter imgwidths=imgwidths crop=crop upscale=instance.upscale %}
 
 {% addtoblock 'css' %}
 <style>
 
-#div-{{ id }}{{ after }} {
+.container-image-{{ id }} {
 {% if imgwidths %}
   {% thumbnail img imgwidths.0 crop=crop upscale=upscale as thumb %}
-  background-image: url({{ thumb.url }});
+  background-image: {% if f %}{{ f }},{% endif %} url({{ thumb.url }});
 {% else %}
-  background-image: url({{ img.url }});
+  background-image: {% if f %}{{ f }},{% endif %} url({{ img.url }});
 {% endif %}
+  background-size: cover;
+  background-position: {{ image.positon }};
 }
 
 {% for k, size in imgwidths.items %}
   {% if k and k != 0 %}
     @media (min-width: {{ k }}px ) {
-      #div-{{ id }}{{ after }} {
+      .container-image-{{ id }} {
         {% thumbnail img size crop=crop upscale=upscale as thumb %}
-        background-image: url({{ thumb.url }});
+        background-image: {% if f %}{{ f }},{% endif %} url({{ thumb.url }});
       }
     }
   {% endif %}

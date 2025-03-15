@@ -1,7 +1,7 @@
 from django import forms
 from django.utils.safestring import mark_safe
 from django.utils.text import Truncator
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from djangocms_text_ckeditor.fields import HTMLFormField
 
 from cmsplus.forms import PlusPluginFormBase, get_style_form_fields

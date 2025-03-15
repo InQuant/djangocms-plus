@@ -1,6 +1,7 @@
 from cmsplus.app_settings import cmsplus_settings
 
 
+"""
 def font_assets(request):
     css = []
     js = []
@@ -20,3 +21,4 @@ def font_assets(request):
         'CMSPLUS_FONT_CSS': css,
         'CMSPLUS_FONT_JS': js,
     }
+"""

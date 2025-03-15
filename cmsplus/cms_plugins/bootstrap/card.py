@@ -1,5 +1,5 @@
 from django import forms
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 
 from cmsplus.forms import PlusPluginFormBase, get_style_form_fields
 from cmsplus.plugin_base import PlusPluginBase, StylePluginMixin
