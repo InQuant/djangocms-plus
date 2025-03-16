@@ -1,5 +1,6 @@
 import logging
 
+from django.utils.translation import gettext_lazy as _
 from djangocms_frontend.cms_plugins import CMSUIPlugin
 from djangocms_frontend.helpers import insert_fields
 
@@ -33,7 +34,6 @@ def get_fieldset_index(fieldsets, fields_key_to_search:str) -> int:
     return next((i for i, (_, value) in enumerate(fieldsets) if fields_key_to_search in value.get(
         'fields', [])), None)
 
-
 class StylePluginMixin:
     """
     Mixin for PlusPluginBase class to provide extra css styles and classes.
@@ -42,6 +42,46 @@ class StylePluginMixin:
     """
     footnote_html = None
 
+    block_attr = {
+        "description": _(
+            "Advanced settings lets you add html attributes to render this element. Use them wisely and rarely."
+        ),
+        "classes": (
+            "collapse",
+            "attributes",
+        ),
+    }
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        attribute_block_index = get_fieldset_index(fieldsets, 'attributes')
+
+        if attribute_block_index:
+            # if attribute block found because AttributeMixin is present
+            return insert_fields(
+                fieldsets,
+                (
+                    "extra_style",
+                    "extra_css",
+                ),
+                block=attribute_block_index,
+            )
+
+        # otherwise build your own Advanced Settings block
+        meta = self.form._meta
+        fields = ["tag_type"] if "tag_type" in getattr(meta, "untangled_fields", ()) else []
+        fields.append("attributes")
+        fields.append("extra_style")
+        fields.append("extra_css")
+        return insert_fields(
+            super().get_fieldsets(request, obj),
+            fields,
+            blockname=_("Advanced settings"),
+            blockattrs=self.block_attr,
+            position=-1,  # Always last
+        )
+
+
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
         if instance.glossary.get('extra_css'):
@@ -49,19 +89,6 @@ class StylePluginMixin:
         if instance.glossary.get('extra_style'):
             instance.add_classes(instance.glossary.get('extra_style').split())
         return context
-
-    def get_fieldsets(self, request, obj=None):
-        """Extend the fieldset of the plugin form.
-        """
-        fieldsets = super().get_fieldsets(request, obj)
-        return insert_fields(
-            fieldsets,
-            (
-                "extra_style",
-                "extra_css",
-            ),
-            block=get_fieldset_index(fieldsets, 'attributes'),
-        )
 
     def get_render_template(self, context, instance, placeholder):
         """ try to eval a template based on dirname of render_template and given
@@ -82,7 +109,7 @@ class StylePluginMixin:
 
     @classmethod
     def get_glossary(cls, instance):
-        return cls.form(data=instance.glossary).deserialize()
+        return cls.form(data=instance.config).deserialize()
 
     @classmethod
     def get_extra_css(cls, instance):

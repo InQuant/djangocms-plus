@@ -6,6 +6,7 @@ DEFAULTS = {
     'PLUGINS': (
         'cmsplus.cms_plugins.bootstrap.plugins.GridContainerPlugin',
         'cmsplus.cms_plugins.bootstrap.plugins.ImagePlugin',
+        'cmsplus.cms_plugins.bootstrap.plugins.EmbedPlugin',
         #'cmsplus.cms_plugins.generic.MultiColumnTextPlugin',
         #'cmsplus.cms_plugins.generic.SvgImagePlugin',
         #'cmsplus.cms_plugins.generic.BackgroundVideoPlugin',

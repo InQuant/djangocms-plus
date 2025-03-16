@@ -12,7 +12,7 @@
 	    sizes="{{ srcset_sizes|join:', ' }}"
         srcset="
         {% for width, size in srcset.items %}
-           {% thumbnail instance.glossary.picture size crop=instance.use_crop upscale=instance.use_upscale as thumb %}
+           {% thumbnail instance.picture size crop=instance.use_crop upscale=instance.use_upscale as thumb %}
            {{ thumb.url }} {{ width }}{% if not forloop.last %},{% endif %}
         {% endfor %}"
     {% endif %}
@@ -23,6 +23,6 @@
     </a>
 {% endif %}
 
-{% if instance.glossary.extra_css %}
+{% if instance.extra_css %}
   {% include "cmsplus/includes/_extra_css.html" %}
 {% endif %}

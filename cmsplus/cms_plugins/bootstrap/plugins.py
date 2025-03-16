@@ -3,7 +3,6 @@ import urllib.parse
 
 from django import forms
 from django.db.models import ManyToOneRel
-from django.forms import widgets
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
@@ -22,9 +21,9 @@ from filer.fields.image import AdminImageFormField, FilerImageField
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import SizeField, PlusFilerImageSearchField
-from cmsplus.forms import PlusStyleFormMixin, get_style_form_fields
+from cmsplus.forms import get_style_form_fields
 from cmsplus.cms_plugins.bootstrap.models import PlusImage
-from cmsplus.cms_plugins.bootstrap.forms import GridContainerForm, PlusImageForm
+from cmsplus.cms_plugins.bootstrap.forms import GridContainerForm, PlusImageForm, EmbedForm
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names, get_img_dev_width_mapping
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, StylePluginMixin
@@ -158,8 +157,6 @@ class ImagePlugin(
         '1-1z"/></svg>'
     )
 
-    #change_form_template = "djangocms_frontend/admin/image.html"
-
     fieldsets = [
         (
             None,
@@ -237,68 +234,10 @@ class ImagePlugin(
         return context
 
 
-'''
-
 # Embed Plugin
 # ------------
 #
-class EmbedForm(PlusStyleFormMixin):
-
-    url = forms.URLField(
-        label=_("Media URL"),
-        widget=widgets.URLInput(attrs={'size': 50}),
-        help_text=_(
-            'Video Url to an external service w/o query params such as YouTube, Vimeo or others, ' 'e.g.: '
-            'https://www.youtube.com/embed/vZw35VUBdzo'),
-    )
-
-    ASPECT_RATIO_CHOICES = [
-        ('embed-responsive-21by9', _("Responsive 21:9")),
-        ('embed-responsive-16by9', _("Responsive 16:9")),
-        ('embed-responsive-4by3', _("Responsive 4:3")),
-        ('embed-responsive-1by1', _("Responsive 1:1")),
-    ]
-    aspect_ratio = forms.ChoiceField(
-        label=_("Aspect Ratio"),
-        choices=ASPECT_RATIO_CHOICES,
-        widget=widgets.RadioSelect,
-        required=False,
-        initial=ASPECT_RATIO_CHOICES[1][0],
-    )
-
-    allow_fullscreen = forms.BooleanField(
-        label=_("Allow Fullscreen"),
-        required=False,
-        initial=True,
-    )
-
-    autoplay = forms.BooleanField(
-        label=_("Autoplay"),
-        required=False,
-    )
-
-    controls = forms.BooleanField(
-        label=_("Display Controls"),
-        required=False,
-    )
-
-    loop = forms.BooleanField(
-        label=_("Enable Looping"),
-        required=False,
-        help_text=_('Inifinte loop playing.'),
-    )
-
-    rel = forms.BooleanField(
-        label=_("Show related"),
-        required=False,
-        help_text=_('Show related media content'),
-    )
-
-    STYLE_CHOICES = 'EMBED_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
-
-
-class BootstrapEmbedPlugin(BootstrapPluginBase):
+class EmbedPlugin(BootstrapPluginBase):
     footnote_html = """
         Renders a bootstrap embed iframe for playing (e.g. youtube) videos.
         <br>
@@ -309,10 +248,28 @@ class BootstrapEmbedPlugin(BootstrapPluginBase):
     form = EmbedForm
     render_template = 'cmsplus/bootstrap/embed.html'
     default_css_class = 'embed-responsive'
-    css_class_fields = StylePluginMixin.css_class_fields + ['aspect_ratio']
+
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": (
+                        'url',
+                        'aspect_ratio',
+                        'allow_fullscreen',
+                        'autoplay',
+                        'controls',
+                        'loop',
+                        'rel',
+                )
+            },
+        ),
+    ]
 
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
+        instance.add_classes(instance.aspect_ratio, self.default_css_class)
+
         url = instance.glossary.get('url')
         params = {}
         for k in ['autoplay', 'controls', 'loop', 'rel']:
@@ -325,127 +282,3 @@ class BootstrapEmbedPlugin(BootstrapPluginBase):
             'allowfullscreen': 'allowfullscreen' if instance.glossary.get('allow_fullscreen') else '',
         })
         return context
-
-
-# Button Plugin
-# -------------
-#
-class BootstrapButtonForm(LinkFormBase):
-    content = forms.CharField(
-        label=_('Content'), required=False,
-        help_text='Button content, e.g.: Click me, or nothing for icon only button')
-
-    BUTTON_SIZES = [
-        ('btn-lg', _("Large button")),
-        ('', _("Default button")),
-        ('btn-sm', _("Small button")),
-    ]
-
-    button_size = forms.ChoiceField(
-        label=_("Button Size"),
-        choices=BUTTON_SIZES,
-        initial='',
-        required=False,
-        help_text=_("Button Size to use.")
-    )
-
-    button_block = forms.ChoiceField(
-        label=_("Button Block"),
-        choices=[
-            ('', _('No')),
-            ('btn-block', _('Block level button')),
-        ],
-        required=False,
-        initial='',
-        help_text=_("Use button block option (span left to right)?")
-    )
-
-    icon_position = forms.ChoiceField(
-        label=_("Icon position"),
-        choices=[
-            ('icon-top', _("Icon top")),
-            ('icon-right', _("Icon right")),
-            ('icon-left', _("Icon left")),
-        ],
-        initial='icon-right',
-        help_text=_("Select icon position related to content."),
-    )
-
-    icon = IconField(required=False)
-
-    STYLE_CHOICES = 'BOOTSTRAP_BUTTON_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
-
-
-class BootstrapButtonPluginModel(PlusItem, LinkPluginMixin):
-    class Meta:
-        proxy = True
-
-
-class BootstrapButtonPlugin(StylePluginMixin, LinkPluginBase):
-    footnote_html = """
-        Renders a bootstrap button with various styles. The button may trigger a
-        internal or external page link, a download oder mailto link.
-    """
-    module = 'Bootstrap'
-    name = 'Button'
-    parent_classes = None
-    require_parent = False
-    allow_children = False
-    default_css_class = 'btn'
-    render_template = 'cmsplus/bootstrap/button.html'
-
-    form = BootstrapButtonForm
-    model = BootstrapButtonPluginModel
-
-    css_class_fields = StylePluginMixin.css_class_fields + ['button_size', 'button_block']
-
-    class Media:
-        css = {'all': ['cmsplus/admin/icon_plugin/css/icon_plugin.css'] + get_icon_style_paths()}
-        js = ['cmsplus/admin/icon_plugin/js/icon_plugin.js']
-
-    fieldsets = [
-        (None, {
-            'fields': ('content', ),
-        }),
-        (_('Styles'), {
-            'fields': (
-                ('extra_style', 'button_size', 'button_block'),
-            ),
-        }),
-        (_('Link settings'), {
-            'fields': (
-                'link_type', 'cms_page', 'section', 'download_file', 'file_as_page', 'ext_url',
-                'mail_to', 'link_target', 'link_title'
-            )
-        }),
-        (_('Icon settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                'icon_position', 'icon',
-            )
-        }),
-        (_('Extra settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_classes',
-                'label',
-            )
-        }),
-    ]
-
-    def render(self, context, instance, placeholder):
-        context = super().render(context, instance, placeholder)
-        icon_pos = instance.glossary.get('icon_position')
-        icon = instance.glossary.get('icon')
-
-        if icon:
-            if icon_pos == 'icon-top':
-                context['icon_top'] = format_html('&nbsp; <i class="{}"></i><br>'.format(icon))
-            elif icon_pos == 'icon-left':
-                context['icon_left'] = format_html('&nbsp; <i class="{}"></i>'.format(icon))
-            elif icon_pos == 'icon-right':
-                context['icon_right'] = format_html('&nbsp; <i class="{}"></i>'.format(icon))
-
-        return context
-'''

@@ -97,6 +97,7 @@ def get_style_form_fields(style_config_key="", style_multiple=False):
 
 
 class PlusStyleFormMixin(DeserializeMixin, EntangledModelFormMixin):
+
     class Meta:
         entangled_fields = {
             "config": []

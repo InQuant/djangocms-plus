@@ -1,6 +1,7 @@
 import logging
 
 from django import forms
+from django.forms import widgets
 from django.utils.translation import gettext_lazy as _
 
 from entangled.forms import EntangledModelForm, EntangledModelFormMixin
@@ -242,3 +243,78 @@ class PlusImageForm(
                     "Only one option is allowed."
                 )
             )
+
+
+# Embed Form
+# ----------
+#
+class EmbedForm(PlusStyleFormMixin, EntangledModelForm):
+
+    url = forms.URLField(
+        label=_("Media URL"),
+        widget=widgets.URLInput(attrs={'size': 50}),
+        help_text=_(
+            'Video Url to an external service w/o query params such as YouTube, Vimeo or others, ' 'e.g.: '
+            'https://www.youtube.com/embed/vZw35VUBdzo'),
+    )
+
+    ASPECT_RATIO_CHOICES = [
+        ('ratio ratio-21x9', _("Responsive 21:9")),
+        ('ratio ratio-16x9', _("Responsive 16:9")),
+        ('ratio ratio-4x3', _("Responsive 4:3")),
+        ('ratio ratio-1x1', _("Responsive 1:1")),
+    ]
+    aspect_ratio = forms.ChoiceField(
+        label=_("Aspect Ratio"),
+        choices=ASPECT_RATIO_CHOICES,
+        widget=widgets.RadioSelect,
+        required=False,
+        initial=ASPECT_RATIO_CHOICES[1][0],
+    )
+
+    allow_fullscreen = forms.BooleanField(
+        label=_("Allow Fullscreen"),
+        required=False,
+        initial=True,
+    )
+
+    autoplay = forms.BooleanField(
+        label=_("Autoplay"),
+        required=False,
+    )
+
+    controls = forms.BooleanField(
+        label=_("Display Controls"),
+        required=False,
+    )
+
+    loop = forms.BooleanField(
+        label=_("Enable Looping"),
+        required=False,
+        help_text=_('Inifinte loop playing.'),
+    )
+
+    rel = forms.BooleanField(
+        label=_("Show related"),
+        required=False,
+        help_text=_('Show related media content'),
+    )
+
+    attributes = AttributesFormField()
+
+    STYLE_CHOICES = 'EMBED_STYLES'
+
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": [
+                'url',
+                'aspect_ratio',
+                'allow_fullscreen',
+                'autoplay',
+                'controls',
+                'loop',
+                'rel',
+                'attributes',
+            ]
+        }

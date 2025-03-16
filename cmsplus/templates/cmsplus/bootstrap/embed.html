@@ -1,8 +1,9 @@
 {% with instance=instance embed_url=embed_url allowfullscreen=allowfullscreen %}
-<div class="{{ instance.css_classes }}">
-	<iframe class="embed-responsive-item" src="{{ embed_url }}" {{ allowfullscreen }}></iframe>
+<div {{ instance.get_attributes }}">
+	<iframe src="{{ embed_url }}" {{ allowfullscreen }}></iframe>
 </div>
+
 {% endwith %}
-{% if instance.glossary.extra_css %}
+{% if instance.extra_css %}
   {% include "cmsplus/includes/_extra_css.html" %}
 {% endif %}
