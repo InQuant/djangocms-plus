@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.db.models.fields.related import ManyToOneRel
 from django.utils.translation import gettext_lazy as _
 
+from djangocms_frontend.fields import AttributesFormField
 from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
 from entangled.forms import EntangledModelForm, EntangledModelFormMixin
 from filer.fields.image import AdminImageFormField, FilerImageField
@@ -98,9 +99,11 @@ def get_style_form_fields(style_config_key="", style_multiple=False):
 
 class PlusStyleFormMixin(DeserializeMixin, EntangledModelFormMixin):
 
+    attributes = AttributesFormField()
+
     class Meta:
         entangled_fields = {
-            "config": []
+            "config": ['attributes']
         }
 
     def __init_subclass__(cls, **kwargs):

@@ -17,6 +17,10 @@ class PlusPlugin(CMSUIPlugin):
     model = PlusItem
 
     @classmethod
+    def get_glossary(cls, instance):
+        return cls.form(data=instance.config).deserialize()
+
+    @classmethod
     def get_extra_css(cls, instance):
         return []
 

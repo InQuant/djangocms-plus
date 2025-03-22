@@ -171,7 +171,6 @@ class PlusImageFormMixin(EntangledModelFormMixin):
         initial=False,
         help_text=_("Adds the .img-thumbnail class."),
     )
-    attributes = AttributesFormField()
     tag_type = TagTypeFormField()
 
     class Meta:
@@ -188,7 +187,6 @@ class PlusImageFormMixin(EntangledModelFormMixin):
                 "picture_fluid",
                 "picture_rounded",
                 "picture_thumbnail",
-                "attributes",
             ]
         }
 
