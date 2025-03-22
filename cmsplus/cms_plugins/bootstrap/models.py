@@ -1,32 +1,16 @@
 import logging
-import urllib.parse
 
 from django.conf import settings
-from django import forms
 from django.utils.functional import cached_property
-from django.db.models import ManyToOneRel
-from django.forms import widgets
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from djangocms_frontend.models import FrontendUIItem
-from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
-from djangocms_frontend.contrib.grid.cms_plugins import GridContainerPlugin as GridContainerPluginBase
-from djangocms_frontend.contrib.image.forms import ImageForm as ImageFormBase
 from djangocms_frontend.contrib.link.models import GetLinkMixin
-from djangocms_frontend.helpers import insert_fields
-from djangocms_frontend import settings as fe_settings
 from easy_thumbnails.files import get_thumbnailer
-from entangled.forms import EntangledModelForm, EntangledModelFormMixin
-from filer.fields.image import AdminImageFormField, FilerImageField
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import SizeField, PlusFilerImageSearchField
-from cmsplus.forms import PlusStyleFormMixin, get_style_form_fields
-from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names
-from cmsplus.models import PlusItem, PlusItemMixin
-from cmsplus.plugin_base import PlusPlugin, StylePluginMixin
+from cmsplus.fields import SizeField
+from cmsplus.models import PlusItemMixin
 
 logger = logging.getLogger(__name__)
 
@@ -263,105 +247,3 @@ class PlusImage(PlusItemMixin, GetLinkMixin, FrontendUIItem):
         else:
             # no fixed
             return fallback_width, 0
-
-    '''
-    @cached_property
-    def img_srcset_data(self):
-        if not self.picture:
-            return None
-
-        srcset = []
-
-        try:
-            thumbnailer = get_thumbnailer(self.picture)
-
-            picture_options = self.get_size(self.width, self.height)
-            picture_width = picture_options["size"][0]
-            thumbnail_options = {"crop": picture_options["crop"]}
-            breakpoints = getattr(
-                settings,
-                "DJANGOCMS_PICTURE_RESPONSIVE_IMAGES_VIEWPORT_BREAKPOINTS",
-                [576, 768, 992],
-            )
-
-            for size in filter(lambda x: x < picture_width, breakpoints):
-                thumbnail_options["size"] = (size, size)
-                srcset.append((int(size), thumbnailer.get_thumbnail(thumbnail_options)))
-        except ValueError:
-            # get_thumbnailer() raises this if it can't establish a `relative_name`.
-            # This may mean that the filer image has been deleted
-            pass
-
-        return srcset
-
-    @cached_property
-    def img_src(self):
-        # image can be empty, for example when the image is removed from filer
-        # in this case we want to return an empty string to avoid #69
-        if not self.picture:
-            return ""
-        # return the original, unmodified image
-        elif self.use_no_cropping:
-            return self.picture.url if self.picture else ""
-
-        picture_options = self.get_size(
-            width=self.width or 0,
-            height=self.height or 0,
-        )
-
-        thumbnail_options = {
-            "size": picture_options["size"],
-            "crop": picture_options["crop"],
-            "upscale": picture_options["upscale"],
-            "subject_location": self.picture.subject_location if self.picture else (),
-        }
-
-        try:
-            thumbnailer = get_thumbnailer(self.picture)
-            url = thumbnailer.get_thumbnail(thumbnail_options).url
-        except ValueError:
-            # get_thumbnailer() raises this if it can't establish a `relative_name`.
-            # This may mean that the filer image has been deleted
-            url = ""
-        return url
-
-    def get_size(self, width=None, height=None):
-        crop = getattr(self, "use_crop", False)
-        upscale = getattr(self, "use_upscale", False)
-        # use field thumbnail settings
-        if getattr(self, "thumbnail_options", None):
-            thumbnail_options = get_related_object(self.config, "thumbnail_options")
-            width = thumbnail_options.width
-            height = thumbnail_options.height
-            crop = thumbnail_options.crop
-            upscale = thumbnail_options.upscale
-        elif not getattr(self, "use_automatic_scaling", None):
-            width = getattr(self, "width", None)
-            height = getattr(self, "height", None)
-
-        # calculate height when not given according to the
-        # golden ratio or fallback to the image size
-        picture_ratio = self.picture.width / self.picture.height if self.picture else PICTURE_RATIO
-        if not height and width:
-            height = width / picture_ratio
-        elif not width and height:
-            width = height * picture_ratio
-        elif not width and not height and getattr(self, "picture", None):
-            if self.picture:
-                width = self.picture.width
-                height = self.picture.height
-            else:
-                width = 0
-                height = 0
-        elif not width and not height:  # pragma: no cover
-            # If no information is available on the image size whatsoever,
-            # make it 640px wide and use PICTURE_RATIO
-            width, height = 640, 640 / PICTURE_RATIO
-        width = int(width)
-        height = int(height)
-        return {
-            "size": (width, height),
-            "crop": crop,
-            "upscale": upscale,
-        }
-    '''

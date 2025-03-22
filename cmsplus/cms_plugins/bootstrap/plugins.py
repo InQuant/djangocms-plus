@@ -1,30 +1,19 @@
 import logging
 import urllib.parse
 
-from django import forms
-from django.db.models import ManyToOneRel
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
-from entangled.forms import EntangledModelForm, EntangledModelFormMixin
-from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
 from djangocms_frontend.contrib.grid.cms_plugins import GridContainerPlugin as GridContainerPluginBase
-from djangocms_frontend.contrib.image.models import Image as FrontendImage
 from djangocms_frontend.helpers import insert_fields, is_first_child
-from djangocms_frontend import settings as fe_settings
 from djangocms_frontend.common.attributes import AttributesMixin
 from djangocms_frontend.common.responsive import ResponsiveMixin
 from djangocms_frontend.common.spacing import MarginMixin
 from djangocms_frontend.contrib.link.cms_plugins import LinkPluginMixin
-from filer.fields.image import AdminImageFormField, FilerImageField
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import SizeField, PlusFilerImageSearchField
-from cmsplus.forms import get_style_form_fields
 from cmsplus.cms_plugins.bootstrap.models import PlusImage
 from cmsplus.cms_plugins.bootstrap.forms import GridContainerForm, PlusImageForm, EmbedForm
-from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names, get_img_dev_width_mapping
+from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_field_names
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, StylePluginMixin
 

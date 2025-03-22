@@ -9,84 +9,15 @@ from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import SizeField, PlusFilerFileSearchField
-from cmsplus.forms import (PlusPluginFormBase, LinkFormBase,
-                           get_style_form_fields)
-from cmsplus.models import (PlusPlugin, LinkPluginMixin, )
-from cmsplus.plugin_base import (StylePluginMixin, PlusPluginBase, LinkPluginBase)
-
-''' TODO - remove!
-# TextLinkPlugin
-# --------------
-#
-class TextLinkPluginModel(PlusPlugin, LinkPluginMixin):
-    class Meta:
-        proxy = True
-
-
-class TextLinkForm(LinkFormBase):
-    link_content = forms.CharField(
-        label=_("Link Content"),
-        widget=forms.widgets.TextInput(attrs={'id': 'id_name'}),  # replace
-        # auto-generated id so that CKEditor automatically transfers the text into
-        # this input field
-        required=False,
-        help_text=_("Content of Link"),
-    )
-
-    STYLE_CHOICES = 'LINK_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
-
-
-class TextLinkPlugin(LinkPluginBase):
-    name = "Link"
-    model = TextLinkPluginModel
-    form = TextLinkForm
-    allow_children = True
-
-    text_enabled = True
-    render_template = 'cmsplus/generic/text-link.html'
-
-    footnote_html = "Renders linked text to a specified page, url, mail address or file."
-    # parent_classes = ['TextPlugin', ]
-
-    # class Media:
-    #   js = ['admin/js/jquery.init.js', 'cmsplus/js/admin/textlinkplugin.js']
-
-    fieldsets = [
-        (None, {
-            'fields': (
-                'link_type', 'cms_page', 'section', 'download_file', 'file_as_page', 'ext_url',
-                'mail_to', 'link_target', 'link_title', 'link_content'
-            )
-        }),
-        (_('Module settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_style', 'extra_classes', 'label', 'extra_css',
-            )
-        }),
-    ]
-
-    @classmethod
-    def get_identifier(cls, obj):
-        return mark_safe(obj.glossary.get('link_content', ''))
-
-    @classmethod
-    def requires_parent_plugin(cls, slot, page):
-        """
-        Workaround for `PluginPool.get_all_plugins()`, otherwise TextLinkPlugin is not allowed
-        as a child of a `TextPlugin`.
-        """
-        # TODO: Check if still needed (it was from cascade)
-        return False
-
+from cmsplus.forms import (PlusPluginFormBase, get_style_form_fields)
+from cmsplus.plugin_base import StylePluginMixin, PlusPlugin
 
 # MultiColTextPlugin
 # ------------------
 #
 class MultiColTextForm(PlusPluginFormBase):
     STYLE_CHOICES = 'MOD_COL_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
     @staticmethod
     def _get_col_choice_field(dev):
@@ -111,7 +42,7 @@ class MultiColTextForm(PlusPluginFormBase):
 MultiColTextForm.extend_col_fields()
 
 
-class MultiColumnTextPlugin(StylePluginMixin, PlusPluginBase):
+class MultiColumnTextPlugin(StylePluginMixin, PlusPlugin):
     footnote_html = """
     renders a wrapper for a multi column text.
     """
@@ -120,7 +51,29 @@ class MultiColumnTextPlugin(StylePluginMixin, PlusPluginBase):
     render_template = "cmsplus/generic/multi-col-text.html"
     allow_children = True
 
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": (
+                        ('col_xs', 'col_sm'),
+                        ('col_md', 'col_lg'),
+                        ('col_xl', 'col_xxl',),
+                )
+            },
+        ),
+    ]
 
+    def render(self, context, instance, placeholder):
+        context = super().render(context, instance, placeholder)
+
+        for dev in cps.DEVICES:
+            v = getattr(instance, f'col_{dev}')
+            print('***', dev, v)
+            if v: instance.add_classes(f'c-text-col-{v}')
+        return context
+
+'''
 # Snippet Plugin
 # --------------
 #
@@ -136,7 +89,7 @@ class SnippetForm(PlusPluginFormBase):
     )
 
     STYLE_CHOICES = 'SNIPPET_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
 class SnippetPlugin(StylePluginMixin, PlusPluginBase):

@@ -3,12 +3,7 @@
 {% with cpis=instance.child_plugin_instances data=instance.glossary %}
   {% if cpis and cpis|length == 1 %}
 
-  <div class="
-  {{ instance.css_classes }}
-  {% if data.col_xs %}g-text-col-{{ data.col_xs }} {% endif %}
-  {% if data.col_md %}g-text-col-md-{{ data.col_md }} {% endif %}
-  {% if data.col_lg %}g-text-col-lg-{{ data.col_lg }} {% endif %}
-  ">
+  <div {{ instance.get_attributes }}>
 
     {% render_plugin cpis.0 %}
 

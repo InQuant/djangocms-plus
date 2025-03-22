@@ -74,6 +74,8 @@ class StylePluginMixin:
         # otherwise build your own Advanced Settings block
         meta = self.form._meta
         fields = ["tag_type"] if "tag_type" in getattr(meta, "untangled_fields", ()) else []
+        if "plugin_title" in self.form.declared_fields.keys():
+            fields.append("plugin_title")
         fields.append("attributes")
         fields.append("extra_style")
         fields.append("extra_css")

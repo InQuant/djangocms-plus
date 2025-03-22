@@ -36,7 +36,10 @@ class BaseFieldMixIn(ABC):
 
 class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixIn):
     def serialize_field(self, qs):
-        return list(qs.values_list("pk", flat=True))
+        return {
+            'model': '{}.{}'.format(qs.model._meta.app_label, qs.model._meta.model_name),
+            'p_keys': list(qs.values_list("pk", flat=True))
+        }
 
     def deserialize_field(self, value: list):
         if value is None:
@@ -46,7 +49,10 @@ class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixI
 
 class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
     def serialize_field(self, obj: object):
-        return getattr(obj, "pk", None)
+        return {
+            'model': '{}.{}'.format(obj._meta.app_label, obj._meta.model_name),
+            'pk': getattr(obj, 'pk', None),
+        }
 
     def deserialize_field(self, value):
         if value is None:

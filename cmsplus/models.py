@@ -10,7 +10,7 @@ class PlusItemMixin:
     
     def __getattr__(self, item):
         """Makes properties of plugin config available as plugin properties."""
-        if item[0] != "_" and item in self.config:  # Avoid infinite recursion trying to get .config from db
+        if item[0] != "_" and item in self.glossary:  # Avoid infinite recursion trying to get .config from db
             return self.glossary.get(item)
         return super().__getattribute__(item)
 
@@ -32,7 +32,10 @@ class PlusItemMixin:
 
     @property
     def title(self):
-        return self.config.get("plugin_title", {}).get("title", "")
+        try:
+            return self.glossary.get("plugin_title", {}).get("title", "")
+        except:
+            return None
 
     @cached_property
     def plugin_class(self):

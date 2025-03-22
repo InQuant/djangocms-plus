@@ -9,12 +9,12 @@ from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridConta
 from djangocms_frontend import settings as fe_settings
 from djangocms_frontend.common.responsive import ResponsiveFormMixin
 from djangocms_frontend.common.spacing import MarginFormMixin
-from djangocms_frontend.fields import AttributesFormField, TagTypeFormField, TemplateChoiceMixin
+from djangocms_frontend.fields import AttributesFormField, TagTypeFormField
 from djangocms_frontend.contrib.link.forms import AbstractLinkForm
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import SizeField, PlusFilerImageSearchField
-from cmsplus.forms import PlusStyleFormMixin
+from cmsplus.fields import PlusFilerImageSearchField
+from cmsplus.forms import PlusStyleEntangledFormMixin
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names
 from cmsplus.models import PlusItem
 from cmsplus.cms_plugins.bootstrap.models import PlusImage
@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 # GridContainer
 # -------------
 #
-class GridContainerForm(PlusStyleFormMixin, GridContainerFormBase):
-    STYLE_CHOICES = 'MOD_CONTAINER_STYLES' # for PlusStyleFormMixin
+class GridContainerForm(PlusStyleEntangledFormMixin, GridContainerFormBase):
+    STYLE_CHOICES = 'MOD_CONTAINER_STYLES' # for PlusStyleEntangldFormMixin
 
     IMAGE_POSITIONING = (
         ("center center", _("Fully Centered")),
@@ -199,7 +199,7 @@ class PlusImageFormMixin(EntangledModelFormMixin):
 
 
 class PlusImageForm(
-    PlusStyleFormMixin, 
+    PlusStyleEntangledFormMixin, 
     AbstractLinkForm,
     ResponsiveFormMixin,
     MarginFormMixin,
@@ -213,7 +213,7 @@ class PlusImageForm(
 
     link_is_optional = True
 
-    STYLE_CHOICES = 'MOD_IMAGE_STYLES' # for PlusStyleFormMixin
+    STYLE_CHOICES = 'MOD_IMAGE_STYLES' # for PlusStyleEntangledFormMixin
 
     class Meta:
         model = PlusImage
@@ -246,7 +246,7 @@ class PlusImageForm(
 # Embed Form
 # ----------
 #
-class EmbedForm(PlusStyleFormMixin, EntangledModelForm):
+class EmbedForm(PlusStyleEntangledFormMixin, EntangledModelForm):
 
     url = forms.URLField(
         label=_("Media URL"),

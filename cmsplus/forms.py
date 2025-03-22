@@ -3,17 +3,13 @@ import logging
 from collections import OrderedDict
 from django import forms
 from django.core.exceptions import ValidationError
-from django.db.models.fields.related import ManyToOneRel
 from django.utils.translation import gettext_lazy as _
 
 from djangocms_frontend.fields import AttributesFormField
-from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
+from djangocms_frontend.common.title import TitleField
 from entangled.forms import EntangledModelForm, EntangledModelFormMixin
-from filer.fields.image import AdminImageFormField, FilerImageField
-from filer.models import Image
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import KeyValueField
 from cmsplus.models import PlusItem
 
 
@@ -65,7 +61,7 @@ def get_style_form_fields(style_config_key="", style_multiple=False):
         ...  # form defs
 
         STYLE_CHOICES = 'MY_CUSTOM_STYLES'
-        extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
+        plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
     class MyCustomPlugin(StylePluginMixin, PlusPluginBase):
@@ -87,17 +83,26 @@ def get_style_form_fields(style_config_key="", style_multiple=False):
         style_field = forms.ChoiceField
 
     return [
+        TitleField(
+            label=_("Title"),
+            required=False,
+            help_text=_(
+                "Optional title of the plugin for easier identification. "
+                "Its <code>title</code> attribute "
+                "will only be set if the checkbox is selected."
+            ),
+        ),
         style_field(
             label=_('Style'), required=False, choices=sc,
             initial=sc[0][0], help_text=_('Extra CSS predefined style class for plugin.')
         ),
-        KeyValueField(
+        AttributesFormField(
             label=_('Extra CSS'), required=False, initial='',
             help_text=_('Add extra (device specific) css key, values, e.g: margin or margin:md or transform:xl'))
     ]
 
 
-class PlusStyleFormMixin(DeserializeMixin, EntangledModelFormMixin):
+class PlusStyleEntangledFormMixin(DeserializeMixin, EntangledModelFormMixin):
 
     attributes = AttributesFormField()
 
@@ -110,7 +115,60 @@ class PlusStyleFormMixin(DeserializeMixin, EntangledModelFormMixin):
         """ needed to get STYLE_CHOICES* from the class which uses this Mixin
         """
         super().__init_subclass__(**kwargs)
-        cls.declared_fields.update(
-            zip(['extra_style', 'extra_css'], get_style_form_fields(
-                getattr(cls, 'STYLE_CHOICES', None), getattr(cls, 'STYLE_CHOICES_MULTIPLE', False))))
+        style_form_fields = get_style_form_fields(getattr(cls, 'STYLE_CHOICES', None),
+            getattr(cls, 'STYLE_CHOICES_MULTIPLE', False))[1:]
+        cls.declared_fields.update(zip(['extra_style', 'extra_css'], style_form_fields))
         cls._meta.entangled_fields['config'].extend(['extra_style', 'extra_css'])
+
+
+class PlusPluginFormBase(DeserializeMixin, forms.ModelForm):
+    """
+    BaseForm for all none Entangled PluginForms.
+    This ModelForm references to a PlusItem Model in order to write and read
+    from the glossary (JSONField) attribute.
+    """
+    attributes = AttributesFormField()
+
+    class Meta:
+        model = PlusItem
+        exclude = ["_json"]  # Do not show json Field in Edit Form
+
+    def __init__(self, *args, **kwargs):
+
+        if kwargs.get('instance'):
+            # set form initial values as our instance model attributes are in
+            # glossary not in the instance itself
+            initial = kwargs.get('initial', {})
+
+            for field_name, field in self.declared_fields.items():
+                initial[field_name] = kwargs.get('instance').glossary.get(field_name)
+
+            kwargs['initial'] = initial
+        super(PlusPluginFormBase, self).__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        """
+        Put serialized data to glossary (_json) field, then save.
+        """
+        self.instance.data = self.serialize_data()
+        return super(PlusPluginFormBase, self).save(commit)
+
+    def serialize_data(self):
+        """
+        Takes form field values and calls "serialize_field" method for each field,
+        if it is declared in the field class
+        :return: Serialized data
+        :rtype: dict
+        """
+        parsed_data = OrderedDict()
+        for key in self.fields.keys():
+            value = self.cleaned_data.get(key)
+            if key.startswith('_'):
+                continue
+
+            field = self.fields.get(key)
+            if hasattr(field, "serialize_field") and callable(field.serialize_field):
+                parsed_data[key] = field.serialize_field(value)
+            else:
+                parsed_data[key] = value
+        return parsed_data
