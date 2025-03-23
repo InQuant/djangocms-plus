@@ -49,6 +49,7 @@ class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixI
 
 class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
     def serialize_field(self, obj: object):
+        if not obj: return None
         return {
             'model': '{}.{}'.format(obj._meta.app_label, obj._meta.model_name),
             'pk': getattr(obj, 'pk', None),

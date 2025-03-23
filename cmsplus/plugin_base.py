@@ -5,7 +5,7 @@ from djangocms_frontend.cms_plugins import CMSUIPlugin
 from djangocms_frontend.helpers import insert_fields
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.models import PlusItem
+from cmsplus.models import PlusItem, PlusLinkedItem
 from cmsplus.forms import PlusPluginForm
 
 logger = logging.getLogger('cmsplus')
@@ -94,6 +94,8 @@ class StylePluginMixin:
             instance.add_classes(f'c-extra-{instance.id}')
         if instance.glossary.get('extra_style'):
             instance.add_classes(instance.glossary.get('extra_style').split())
+        if instance.glossary.get('plugin_title') and instance.plugin_title.get('show'):
+            instance.add_attribute('title', instance.plugin_title.get('title'))
         return context
 
     def get_render_template(self, context, instance, placeholder):
@@ -177,3 +179,37 @@ class StylePluginMixin:
             logger.exception(e)
 
         return css
+
+
+class LinkPluginMixin:
+    model = PlusLinkedItem
+    link_fieldset_position = 1
+    link_fields = (
+        (
+            ("external_link", "internal_link"),
+            ("mailto", "phone"),
+            ("anchor", "target"),
+            "file_link",
+        )
+    )
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        """The link form needs the request object to check permissions"""
+        form = super().get_form(request, obj, change, **kwargs)
+        form.request = request
+        return form
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        if self.link_fieldset_position is not None:
+            fieldsets = insert_fields(
+                fieldsets,
+                self.link_fields,
+                blockname=_("Link settings"),
+                position=self.link_fieldset_position,
+            )
+        return fieldsets
+
+    def render(self, context, instance, placeholder):
+        context['plus_item_link'] = instance.get_link()
+        return super().render(context, instance, placeholder)

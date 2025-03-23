@@ -1,5 +1,6 @@
 from django.utils.functional import cached_property
 from djangocms_frontend.models import FrontendUIItem
+from djangocms_frontend.contrib.link.models import GetLinkMixin
 
 class PlusItemMixin:
     def __str__(self):
@@ -56,6 +57,11 @@ class PlusItemMixin:
         return css
     
 class PlusItem(PlusItemMixin, FrontendUIItem):
+    class Meta:
+        proxy = True
+        verbose_name = "PUI item"
+
+class PlusLinkedItem(GetLinkMixin, PlusItem):
     class Meta:
         proxy = True
         verbose_name = "PUI item"

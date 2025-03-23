@@ -1,18 +1,22 @@
-{% load l10n cms_tags %}
+{% load l10n cms_tags frontend %}
 {% localize off %}{% spaceless %}
-{% with css_classes=instance.css_classes inline_styles=instance.inline_styles %} 
+
+{% if plus_item_link %}
+  <a href="{{ plus_item_link }}"
+    {% if instance.target %} target="{{ instance.target }}"{% endif %}
+    {% get_attributes instance.link_attributes %}>
+{% endif %}
+
+<img id="svgimg-{{ instance.id}}" {{ instance.get_attributes }}
+  {% if not instance.attributes.alt and instance.picture.default_alt_text %} alt="{{ instance.picture.default_alt_text }}"{% endif %}
+	src="{{ instance.picture.url }}"/>
+
+{% if plus_item_link %}
+  </a>
+{% endif %}
+
+{% endspaceless %}{% endlocalize %}
 
 {% if instance.glossary.extra_css %}
   {% include "cmsplus/includes/_extra_css.html" %}
 {% endif %}
-
-<img id="img-{{ instance.id}}"
-  {{ instance.html_tag_attributes }}
-  {% if css_classes %} class="{{ css_classes }}"{% endif %}
-  {% if inline_styles %} style="{{ inline_styles }}"{% endif %}
-	src="{{ instance.glossary.image_file.url }}"/>
-
-{% if instance.link %}</a>{% endif %}
-
-{% endwith %}
-{% endspaceless %}{% endlocalize %}

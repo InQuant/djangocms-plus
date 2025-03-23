@@ -9,8 +9,8 @@ from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import SizeField, PlusFilerFileSearchField
-from cmsplus.forms import (PlusPluginFormBase, get_style_form_fields)
-from cmsplus.plugin_base import StylePluginMixin, PlusPlugin
+from cmsplus.forms import (PlusPluginFormBase, get_style_form_fields, AbstractLinkForm)
+from cmsplus.plugin_base import StylePluginMixin, PlusPlugin, LinkPluginMixin
 
 # MultiColTextPlugin
 # ------------------
@@ -73,7 +73,7 @@ class MultiColumnTextPlugin(StylePluginMixin, PlusPlugin):
             if v: instance.add_classes(f'c-text-col-{v}')
         return context
 
-'''
+
 # Snippet Plugin
 # --------------
 #
@@ -92,7 +92,7 @@ class SnippetForm(PlusPluginFormBase):
     plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SnippetPlugin(StylePluginMixin, PlusPluginBase):
+class SnippetPlugin(StylePluginMixin, PlusPlugin):
     footnote_html = """
     renders a given html snippet, can be used to include another site via iframe.
     """
@@ -104,6 +104,15 @@ class SnippetPlugin(StylePluginMixin, PlusPluginBase):
 
     text_enabled = True
     text_editor_preview = False
+
+    fieldsets = [
+        (
+            None,
+            {
+                "fields": ('html',),
+            },
+        ),
+    ]
 
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
@@ -120,83 +129,38 @@ class SnippetPlugin(StylePluginMixin, PlusPluginBase):
 # SVG Plugin
 # ----------
 #
-class SvgImageForm(LinkFormBase):
+class SvgImageForm(AbstractLinkForm):
 
-    image_file = PlusFilerFileSearchField(
+    picture = PlusFilerFileSearchField(
         label=_('SVG Image File'),
         required=True,
     )
 
-    image_title = forms.CharField(
-        label=_('Image Title'),
-        required=False,
-        help_text=_(
-            'Caption text added to the "title" attribute of the ' '<img> element.'),
-        )
-
-    image_alt = forms.CharField(
-        label=_('Alternative Description'),
-        required=False,
-        help_text=_(
-            'Textual description of the image added to the "alt" ' 'tag of the <img> element.'),
-        )
-
     require_link = False
     STYLE_CHOICES = 'SVG_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SvgImagePluginModel(PlusPlugin, LinkPluginMixin):
-    class Meta:
-        proxy = True
-
-
-class SvgImagePlugin(StylePluginMixin, LinkPluginBase):
+class SvgImagePlugin(StylePluginMixin, LinkPluginMixin, PlusPlugin):
     footnote_html = """
     renders a svg in an image tag.
     """
     name = 'SvgImage'
     form = SvgImageForm
-    model = SvgImagePluginModel
     allow_children = False
     render_template = 'cmsplus/generic/svg.html'
 
-    text_enabled = True  # enable in CK_EDITOR
+    text_enabled = True  # enable in TEXT Plugin EDITOR
     text_editor_preview = False
     tag_attr_map = {'image_title': 'title', 'image_alt': 'alt'}
 
     fieldsets = [
         (None, {
-            'fields': ('image_file', 'image_title', 'image_alt'),
-        }),
-        (_('Module settings'), {
-            'fields': (
-                'extra_style', 'extra_classes', 'label',
-            )
-        }),
-        (_('Link settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                'link_type', 'cms_page', 'section', 'download_file', 'file_as_page', 'ext_url',
-                'mail_to', 'link_target', 'link_title'
-            )
-        }),
-        (_('Extra CSS'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_css',
-            )
-        }),
+            'fields': ('picture',),
+        })
     ]
 
-    @classmethod
-    def get_identifier(cls, instance):
-        try:
-            name = str(instance.glossary.get('image_file'))
-        except AttributeError:
-            name = "No Image"
-        return mark_safe(name)
-
+'''
 
 # VerticalRatioSpacer Plugin
 # --------------------------
