@@ -1,0 +1,13 @@
+@import 'node_modules/bootstrap/scss/bootstrap';
+
+$c_textcols: (1, 2, 3);
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    /* text column count */
+    @each $size in $c_textcols {
+      .c-text-col#{$infix}-#{$size} { column-count: #{$size}; }
+    }
+  }
+}
