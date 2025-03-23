@@ -4,16 +4,16 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings
-from cmsplus.forms import PlusPluginFormBase, get_style_form_fields, LinkFormBase
-from cmsplus.models import PlusPlugin, LinkPluginMixin
-from cmsplus.plugin_base import LinkPluginBase, StylePluginMixin
+from cmsplus.forms import PlusPluginFormBase, AbstractLinkForm, get_style_form_fields
+from cmsplus.models import PlusLinkedItem
+from cmsplus.plugin_base import StylePluginMixin, LinkPluginMixin, PlusPlugin
 
 
 def get_visible_slides_fields():
     n_choices = [(n, '%d slides' % n) for n in range(1, 16)]
     fields = []
     for dev in reversed(cmsplus_settings.DEVICES):
-        if dev == 'xl':
+        if dev == 'xxl':
             initial = '3'
             required = True
             choices = n_choices
@@ -29,7 +29,8 @@ def get_visible_slides_fields():
 
 
 class SliderForm(PlusPluginFormBase):
-    n_slides_xl, n_slides_lg, n_slides_md, n_slides_sm, n_slides_xs = get_visible_slides_fields()
+
+    n_slides_xxl, n_slides_xl, n_slides_lg, n_slides_md, n_slides_sm, n_slides_xs = get_visible_slides_fields()
 
     TYPE_CHOICES = (
         ('carousel', 'Carousel'),
@@ -40,6 +41,13 @@ class SliderForm(PlusPluginFormBase):
         initial='carousel',
         choices=TYPE_CHOICES,
         help_text=_('slider: rewinds slider to the start/end, carousel: circles.'),
+    )
+
+    show_arrows = forms.BooleanField(
+        label=_('Show Arrows'),
+        initial=True,
+        required=False,
+        help_text=_('Show Slider Control Arrows?'),
     )
 
     gap = forms.IntegerField(
@@ -92,10 +100,20 @@ class SliderForm(PlusPluginFormBase):
     )
 
     STYLE_CHOICES = 'SLIDER_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
+
+    def clean(self):
+        super().clean()
+        breakpoints = {}
+        for dev in reversed(cmsplus_settings.DEVICES):
+            key = 'n_slides_%s' % dev
+            width = cmsplus_settings.DEVICE_MAX_WIDTH_MAP[dev]
+            if self.cleaned_data.get(key):
+                breakpoints[width] = {'perView': int(self.cleaned_data[key])}
+        self.cleaned_data['breakpoints'] = breakpoints
 
 
-class SliderPlugin(StylePluginMixin, LinkPluginBase):
+class SliderPlugin(StylePluginMixin, PlusPlugin):
     name = "Slider"
     require_parent = False
     child_classes = ['SlidePlugin', ]
@@ -108,31 +126,19 @@ class SliderPlugin(StylePluginMixin, LinkPluginBase):
     fieldsets = [
         (None, {
             'fields': (
-                ('n_slides_xl', 'n_slides_lg', 'n_slides_md', 'n_slides_sm', 'n_slides_xs',),
-                'type',
-                'gap',
-                'peek',
-                ('autoplay', 'hoverpause',),
+                ('n_slides_xxl', 'n_slides_xl', 'n_slides_lg', 'n_slides_md', 'n_slides_sm', 'n_slides_xs',),
+                ('gap', 'peek',),
+                ('type', 'autoplay'),
+                ('show_arrows', 'hoverpause',),
                 ('animation_duration', 'animation_timing_func'),
             ),
             'description': _('Number of visible slides for the different device sizes:'),
-        }),
-        (_('Module settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_style', 'extra_classes', 'label',
-            )
-        }),
-        (_('Extra CSS'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_css',
-            )
         }),
     ]
 
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
+        instance.add_classes('glide', 'glide-swipeable')
         context['slider_config'] = json.dumps(instance.glossary)
         return context
 
@@ -144,23 +150,22 @@ class SliderPlugin(StylePluginMixin, LinkPluginBase):
             width = cmsplus_settings.DEVICE_MAX_WIDTH_MAP[dev]
             if obj.glossary.get(key):
                 breakpoints[width] = {'perView': int(obj.glossary[key])}
-        obj.data['breakpoints'] = breakpoints
+        obj.config['breakpoints'] = breakpoints
         return True
 
-
-class SlideForm(LinkFormBase):
+class SlideForm(AbstractLinkForm):
     require_link = False
 
     STYLE_CHOICES = 'SLIDE_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SlidePluginModel(PlusPlugin, LinkPluginMixin):
+class SlidePluginModel(PlusLinkedItem):
     class Meta:
         proxy = True
 
 
-class SlidePlugin(StylePluginMixin, LinkPluginBase):
+class SlidePlugin(StylePluginMixin, LinkPluginMixin, PlusPlugin):
     name = "Slide"
     parent_classes = ['SliderPlugin', ]
     allow_children = True
@@ -174,3 +179,17 @@ class SlidePlugin(StylePluginMixin, LinkPluginBase):
         js = [
             'admin/js/jquery.init.js',
         ]
+
+    fieldsets = [
+        (None, {
+            'fields': (
+            ),
+            'description': _('Nothing to input here:'),
+        }),
+    ]
+
+    def render(self, context, instance, placeholder):
+        context = super().render(context, instance, placeholder)
+        instance.add_classes('glide', 'glide-swipeable')
+        context['slider_config'] = json.dumps(instance.glossary)
+        return context

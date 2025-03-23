@@ -1,20 +1,22 @@
 {% load cms_tags sekizai_tags static %}
-{% addtoblock 'css' %}<link rel="stylesheet" href="{% static 'cmsplus/ext/glidejs/glide.core.css' %}">{% endaddtoblock %}
-{% addtoblock 'css' %}<link rel="stylesheet" href="{% static 'cmsplus/css/generic/slider.css' %}">{% endaddtoblock %}
-{% addtoblock 'js' %}<script src="{% static 'cmsplus/ext/glidejs/glide.min.js' %}"></script>{% endaddtoblock %}
+{% addtoblock 'css' %}
+  <link rel="stylesheet" href="{% static 'cmsplus/ext/glidejs/glide.core.css' %}">
+  <link rel="stylesheet" href="{% static 'cmsplus/css/generic/slider.css' %}">
+{% endaddtoblock %}
 {% addtoblock 'js' %}
+  <script src="{% static 'cmsplus/ext/glidejs/glide.min.js' %}"></script>
   <script>
       let glide{{ instance.id }} = new Glide('#glide-{{ instance.id }}', {
           focusAt: "center",
 
           {% if  instance.glossary.n_slides_xl %}
-              perView: {{ instance.glossary.n_slides_xl }},
+              perView: {{ instance.glossary.n_slides_xxl }},
           {% endif %}
           {% if instance.glossary.type %}
               type: "{{ instance.glossary.type }}",
           {% endif %}
-          {% if instance.data.breakpoints %}
-              breakpoints: {{ instance.data.breakpoints|safe }},
+          {% if instance.config.breakpoints %}
+              breakpoints: {{ instance.config.breakpoints|safe }},
           {% endif %}
           {% if instance.glossary.gap %}
               gap: {{ instance.glossary.gap }},
@@ -37,13 +39,16 @@
 {% endaddtoblock %}
 
 <div class="glide-plugin--wrapper">
-  <div id="glide-{{ instance.id }}" class="glide glide-swipeable {{ instance.css_classes }}">
-    <div class="glide__arrows" data-glide-el="controls">
-      <button class="glide__arrow glide__arrow--left btn btn-outline"
-              data-glide-dir="<"><i class="fa fa-chevron-left"></i></button>
-      <button class="glide__arrow glide__arrow--right btn btn-outline"
-              data-glide-dir=">"><i class="fa fa-chevron-right"></i></button>
-    </div>
+  <div id="glide-{{ instance.id }}" {{ instance.get_attributes }}>
+
+    {% if instance.show_arrows %}
+      <div class="glide__arrows" data-glide-el="controls">
+        <button class="glide__arrow glide__arrow--left btn btn-outline"
+                data-glide-dir="<"><i class="bi bi-chevron-left"></i></button>
+        <button class="glide__arrow glide__arrow--right btn btn-outline"
+                data-glide-dir=">"><i class="bi bi-chevron-right"></i></button>
+      </div>
+    {% endif %}
 
     <div class="glide__track" data-glide-el="track">
       <ul class="glide__slides mb-0">

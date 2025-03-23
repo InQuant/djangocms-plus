@@ -1,18 +1,19 @@
-{% load cms_tags %}
+{% load cms_tags frontend %}
 
-{% if instance.link %}
-  <a href="{{ instance.link }}" class="c-slide-link"
-    {% if instance.download %} download="{{ instance.download_name }}"{% endif %}
-    {% if instance.glossary.link_target %} target="{{ instance.glossary.link_target }}"{% endif %}>
+{% if plus_item_link %}
+  <a href="{{ plus_item_link }}"
+    {% if instance.target %} target="{{ instance.target }}"{% endif %}
+    {% get_attributes instance.link_attributes %}>
 {% endif %}
 
-<div class="{{ instance.css_classes }}">
+<div {{ instance.get_attributes }}>
 {% for plugin in instance.child_plugin_instances %}
   {% render_plugin plugin %}
 {% endfor %}
 </div>
 
-{% if instance.link %}</a>{% endif %}
+{% if plus_item_link %}</a>{% endif %}
+
 {% if instance.glossary.extra_css %}
   {% include "cmsplus/includes/_extra_css.html" %}
 {% endif %}

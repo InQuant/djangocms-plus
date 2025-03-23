@@ -16,6 +16,8 @@ class PlusItemMixin:
         return super().__getattribute__(item)
 
     def save(self, *args, **kwargs):
+        if getattr(self.plugin_class, 'sanitize_model', None):
+            self.plugin_class.sanitize_model(self)
         self._glossary = None
         super().save(*args, **kwargs)
 

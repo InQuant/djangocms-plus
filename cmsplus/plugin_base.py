@@ -24,6 +24,10 @@ class PlusPlugin(CMSUIPlugin):
     def get_extra_css(cls, instance):
         return []
 
+    @classmethod
+    def sanitize_model(cls, instance):
+        return True
+
 
 def get_fieldset_index(fieldsets, fields_key_to_search:str) -> int:
     """ returns the index of fieldset, where fields contains given key.

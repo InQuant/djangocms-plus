@@ -11,8 +11,8 @@ DEFAULTS = {
         'cmsplus.cms_plugins.generic.SnippetPlugin',
         'cmsplus.cms_plugins.generic.SvgImagePlugin',
         #'cmsplus.cms_plugins.generic.BackgroundVideoPlugin',
-        #'cmsplus.cms_plugins.generic.slider.SlidePlugin',
-        #'cmsplus.cms_plugins.generic.slider.SliderPlugin',
+        'cmsplus.cms_plugins.generic.slider.SlidePlugin',
+        'cmsplus.cms_plugins.generic.slider.SliderPlugin',
         #'cmsplus.cms_plugins.generic.AudioEmbedPlugin',
     ),
 
