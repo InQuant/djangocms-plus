@@ -7,14 +7,13 @@ from django.utils.translation import gettext_lazy as _
 from entangled.forms import EntangledModelForm, EntangledModelFormMixin
 from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
 from djangocms_frontend import settings as fe_settings
-from djangocms_frontend.common.responsive import ResponsiveFormMixin
-from djangocms_frontend.common.spacing import MarginFormMixin
+from djangocms_frontend.common import ResponsiveFormMixin, MarginFormMixin
 from djangocms_frontend.fields import AttributesFormField, TagTypeFormField
 from djangocms_frontend.contrib.link.forms import AbstractLinkForm
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import PlusFilerImageSearchField
-from cmsplus.forms import PlusStyleEntangledFormMixin
+from cmsplus.forms import PlusPluginFormBase, PlusStyleEntangledFormMixin, get_style_form_fields
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names
 from cmsplus.models import PlusItem
 from cmsplus.cms_plugins.bootstrap.models import PlusImage
@@ -25,7 +24,7 @@ logger = logging.getLogger(__name__)
 # GridContainer
 # -------------
 #
-class GridContainerForm(PlusStyleEntangledFormMixin, GridContainerFormBase):
+class GridContainerFormMixin(PlusStyleEntangledFormMixin, EntangledModelFormMixin):
     STYLE_CHOICES = 'MOD_CONTAINER_STYLES' # for PlusStyleEntangldFormMixin
 
     IMAGE_POSITIONING = (
@@ -76,7 +75,6 @@ class GridContainerForm(PlusStyleEntangledFormMixin, GridContainerFormBase):
 
 
     class Meta:
-        model = PlusItem
         entangled_fields = {
             "config": [
                 "image",
@@ -96,6 +94,12 @@ class GridContainerForm(PlusStyleEntangledFormMixin, GridContainerFormBase):
         cls.declared_fields.update(dict(get_img_dev_width_fields()))
         cls._meta.entangled_fields['config'].extend(get_img_dev_width_field_names())
 
+class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": []
+        }
 
 # Image Form
 # ----------
@@ -246,7 +250,9 @@ class PlusImageForm(
 # Embed Form
 # ----------
 #
-class EmbedForm(PlusStyleEntangledFormMixin, EntangledModelForm):
+class EmbedForm(PlusPluginFormBase):
+    STYLE_CHOICES = 'EMBED_STYLES'
+    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
     url = forms.URLField(
         label=_("Media URL"),
@@ -299,20 +305,3 @@ class EmbedForm(PlusStyleEntangledFormMixin, EntangledModelForm):
     )
 
     attributes = AttributesFormField()
-
-    STYLE_CHOICES = 'EMBED_STYLES'
-
-    class Meta:
-        model = PlusItem
-        entangled_fields = {
-            "config": [
-                'url',
-                'aspect_ratio',
-                'allow_fullscreen',
-                'autoplay',
-                'controls',
-                'loop',
-                'rel',
-                'attributes',
-            ]
-        }

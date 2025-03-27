@@ -187,15 +187,8 @@ class StylePluginMixin:
 
 class LinkPluginMixin:
     model = PlusLinkedItem
-    link_fieldset_position = 1
-    link_fields = (
-        (
-            ("external_link", "internal_link"),
-            ("mailto", "phone"),
-            ("anchor", "target"),
-            "file_link",
-        )
-    )
+    link_fieldset_position = -1
+    link_fields = ("link", "target")
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         """The link form needs the request object to check permissions"""

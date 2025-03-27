@@ -5,9 +5,7 @@ from django.utils.translation import gettext_lazy as _
 
 from djangocms_frontend.contrib.grid.cms_plugins import GridContainerPlugin as GridContainerPluginBase
 from djangocms_frontend.helpers import insert_fields, is_first_child
-from djangocms_frontend.common.attributes import AttributesMixin
-from djangocms_frontend.common.responsive import ResponsiveMixin
-from djangocms_frontend.common.spacing import MarginMixin
+from djangocms_frontend.common import AttributesMixin, ResponsiveMixin, MarginMixin
 from djangocms_frontend.contrib.link.cms_plugins import LinkPluginMixin
 
 from cmsplus.app_settings import cmsplus_settings as cps
