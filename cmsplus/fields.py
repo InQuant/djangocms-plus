@@ -3,7 +3,7 @@ import logging
 import re
 from abc import abstractmethod, ABC
 from datetime import datetime
-from cms.models.pagemodel import Page
+from cms.models import Page
 from cms.utils import get_current_site
 from django import forms
 from django.contrib.admin.sites import site as admin_site
@@ -100,7 +100,7 @@ class PageSearchField(PlusModelChoiceField):
     iterator = PageChoiceIterator
 
     def __init__(self, *args, **kwargs):
-        queryset = Page.objects.public()
+        queryset = Page.objects.all()
         try:
             queryset = queryset.on_site(get_current_site())
         except Exception:

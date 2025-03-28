@@ -14,7 +14,7 @@ from entangled.forms import EntangledModelForm, EntangledModelFormMixin
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.models import PlusItem
-from cmsplus.fields import PlusFilerFileSearchField
+from cmsplus.fields import PlusFilerImageSearchField
 
 
 logger = logging.getLogger(__name__)
@@ -201,3 +201,34 @@ class AbstractLinkForm(PlusPluginFormBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["link"].required = not self.link_is_optional
+
+# image form fields
+# -----------------
+#
+def get_image_form_fields(required=False, help_text=''):
+    """
+    Can be used to insert image form fields into the custom plugin form
+    definition. call e.g.:
+    image_file, image_title, image_alt = get_image_form_fields(required=True)
+    """
+    return (
+       PlusFilerImageSearchField(
+           label=_('Image File'),
+           required=required,
+           help_text=help_text
+           ),
+
+       forms.CharField(
+           label=_('Image Title'),
+           required=False,
+           help_text=_(
+               'Caption text added to the "title" attribute of the ' '<img> element.'),
+           ),
+
+       forms.CharField(
+           label=_('Alternative Description'),
+           required=False,
+           help_text=_(
+               'Textual description of the image added to the "alt" ' 'tag of the <img> element.'),
+           )
+       )

@@ -162,7 +162,8 @@ class PageUtils:
     @staticmethod
     def export_whole_site():
         pages_data = []
-        for p in Page.objects.filter(publisher_is_draft=True, node__parent=None):
+        # TODO: for p in Page.objects.filter(publisher_is_draft=True, node__parent=None):
+        for p in Page.objects.filter(node__parent=None):
             pu = PageUtils(p)
             pages_data.append(pu.page_data)
         return pages_data
