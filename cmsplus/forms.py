@@ -1,5 +1,6 @@
 import logging
 
+from copy import copy
 from collections import OrderedDict
 from django import forms
 from django.core.exceptions import ValidationError
@@ -31,6 +32,7 @@ class DeserializeMixin:
         parsed_dict = OrderedDict()
 
         for field_name in self.declared_fields:
+            if self._meta.exclude and field_name in self._meta.exclude: continue
             value = self.data.get(field_name, None)
 
             field = self.declared_fields.get(field_name)
@@ -47,12 +49,10 @@ class DeserializeMixin:
         return parsed_dict
 
 
-class PlusPluginForm(DeserializeMixin, EntangledModelForm):
+class PlusPluginForm(DeserializeMixin, forms.ModelForm):
     class Meta:
         model = PlusItem
-        entangled_fields = {
-            "config": []
-        }
+        exclude = ['ui_item', 'config', 'tag_type']
 
 # StylePluginMixin form fields
 # ----------------------------
@@ -109,22 +109,21 @@ def get_style_form_fields(style_config_key="", style_multiple=False):
 class PlusStyleEntangledFormMixin(DeserializeMixin, EntangledModelFormMixin):
 
     attributes = AttributesFormField()
-
+    extra_style = get_style_form_fields()[1]
+    extra_css = get_style_form_fields()[2]
     class Meta:
         entangled_fields = {
-            "config": ['attributes']
+            "config": ['attributes', 'extra_style', 'extra_css']
         }
-
 
     def __init_subclass__(cls, **kwargs):
         """ needed to get STYLE_CHOICES* from the class which uses this Mixin
         """
         super().__init_subclass__(**kwargs)
-        style_form_fields = get_style_form_fields(getattr(cls, 'STYLE_CHOICES', None),
-            getattr(cls, 'STYLE_CHOICES_MULTIPLE', False))[1:]
-        cls.declared_fields.update(zip(['extra_style', 'extra_css'], style_form_fields))
-        cls._meta.entangled_fields['config'].extend(['extra_style', 'extra_css'])
-
+        choices_name = getattr(cls, 'STYLE_CHOICES', None)
+        choices_multiple_name = getattr(cls, 'STYLE_CHOICES_MULTIPLE', None)
+        style_field = get_style_form_fields(choices_name, choices_multiple_name)[1]
+        cls.declared_fields['extra_style'] = style_field
 
 
 class PlusPluginFormBase(DeserializeMixin, forms.ModelForm):
@@ -137,7 +136,7 @@ class PlusPluginFormBase(DeserializeMixin, forms.ModelForm):
 
     class Meta:
         model = PlusItem
-        exclude = ["_json"]  # Do not show json Field in Edit Form
+        exclude = ['ui_item', 'config', 'tag_type']  # Do not show those fields in edit form
 
     def __init__(self, *args, **kwargs):
 

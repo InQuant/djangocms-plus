@@ -73,6 +73,12 @@ class GridContainerFormMixin(PlusStyleEntangledFormMixin, EntangledModelFormMixi
         label=_('Crop Specifiaction'), initial='', required=False,
         help_text=_('Specifiy cropping, e.g.: smart | scale | 0,10 | ,0) - leave empty for default behavior.'))
 
+    img_dev_width_xs = get_img_dev_width_fields()[0][1]
+    img_dev_width_sm = get_img_dev_width_fields()[1][1]
+    img_dev_width_md = get_img_dev_width_fields()[2][1]
+    img_dev_width_lg = get_img_dev_width_fields()[3][1]
+    img_dev_width_xl = get_img_dev_width_fields()[4][1]
+    img_dev_width_xxl = get_img_dev_width_fields()[5][1]
 
     class Meta:
         entangled_fields = {
@@ -84,15 +90,9 @@ class GridContainerFormMixin(PlusStyleEntangledFormMixin, EntangledModelFormMixi
                 "upscale",
                 "crop",
                 "crop_spec",
-            ]
+            ] + get_img_dev_width_field_names()
         }
 
-    def __init_subclass__(cls, **kwargs):
-        """ extend fields with image width fields
-        """
-        super().__init_subclass__(**kwargs)
-        cls.declared_fields.update(dict(get_img_dev_width_fields()))
-        cls._meta.entangled_fields['config'].extend(get_img_dev_width_field_names())
 
 class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
     class Meta:
@@ -100,6 +100,18 @@ class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
         entangled_fields = {
             "config": []
         }
+
+    def clean(self):
+        super().clean()
+        try:
+            # helpless hack because of PlusItem.errors - the initial of DeviceChoiceField gets lost!
+            if not self.cleaned_data['padding_devices']:
+                self.cleaned_data['padding_devices'] =  [size for size, _ in fe_settings.DEVICE_CHOICES]
+            if not self.cleaned_data['margin_devices']:
+                self.cleaned_data['margin_devices'] = [size for size, _ in fe_settings.DEVICE_CHOICES]
+        except:
+            pass
+
 
 # Image Form
 # ----------
@@ -177,6 +189,13 @@ class PlusImageFormMixin(EntangledModelFormMixin):
     )
     tag_type = TagTypeFormField()
 
+    img_dev_width_xs = get_img_dev_width_fields()[0][1]
+    img_dev_width_sm = get_img_dev_width_fields()[1][1]
+    img_dev_width_md = get_img_dev_width_fields()[2][1]
+    img_dev_width_lg = get_img_dev_width_fields()[3][1]
+    img_dev_width_xl = get_img_dev_width_fields()[4][1]
+    img_dev_width_xxl = get_img_dev_width_fields()[5][1]
+
     class Meta:
         entangled_fields = {
             "config": [
@@ -191,19 +210,11 @@ class PlusImageFormMixin(EntangledModelFormMixin):
                 "picture_fluid",
                 "picture_rounded",
                 "picture_thumbnail",
-            ]
+            ] + get_img_dev_width_field_names()
         }
 
-    def __init_subclass__(cls, **kwargs):
-        """ extend fields with image width fields
-        """
-        super().__init_subclass__(**kwargs)
-        cls.declared_fields.update(dict(get_img_dev_width_fields()))
-        cls._meta.entangled_fields['config'].extend(get_img_dev_width_field_names())
-
-
 class PlusImageForm(
-    PlusStyleEntangledFormMixin, 
+    PlusStyleEntangledFormMixin,
     AbstractLinkForm,
     ResponsiveFormMixin,
     MarginFormMixin,
@@ -227,6 +238,13 @@ class PlusImageForm(
 
     def clean(self):
         super().clean()
+        try:
+            # helpless hack because of PlusItem.errors - the initial of DeviceChoiceField gets lost!
+            if not self.cleaned_data['margin_devices']:
+                self.cleaned_data['margin_devices'] = [size for size, _ in fe_settings.DEVICE_CHOICES]
+        except:
+            pass
+
         data = self.cleaned_data
         # there can be only one link type
         if (
