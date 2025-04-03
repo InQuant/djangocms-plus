@@ -54,10 +54,12 @@ def patch_frontend_plugins():
     for p in plugin_pool.registered_plugins:
         if issubclass(p, CMSUIPlugin):
             logger.info(f'* {p.__name__}')
-            p.child_classes = None
-            p.parent_classes = None
-            if p.__name__ in ['GridContainerPlugin', 'ImagePlugin', 'NavContainerPlugin']:
-                # NavContainerPlugin is deprecated, Container + Image are replaced by a customized
+            #p.child_classes = None
+            #p.parent_classes = None
+            if p.__name__ in ['GridContainerPlugin', 'GridRowPlugin', 'GridColumnPlugin', 'ImagePlugin', 'NavContainerPlugin']:
+            #if p.__name__ in ['GridContainerPlugin', 'ImagePlugin', 'NavContainerPlugin']:
+            #if p.__name__ in ['ImagePlugin', 'NavContainerPlugin']:
+                # NavContainerPlugin is deprecated, Container, Row, Col + Image are replaced by a customized
                 # version here
                 plugin_pool.unregister_plugin(p)
             # somehow neccessary if we unregister some plugins

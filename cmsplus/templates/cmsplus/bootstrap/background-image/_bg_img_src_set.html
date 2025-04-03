@@ -21,7 +21,7 @@
     @media (min-width: {{ k }}px ) {
       .container-image-{{ id }} {
         {% thumbnail img size crop=crop upscale=upscale as thumb %}
-        background-image: {% if f %}{{ f }},{% endif %} url({{ thumb.url }});
+        background-image: {% if f %}{{ f }}, {% endif %}url({{ thumb.url }});
       }
     }
   {% endif %}

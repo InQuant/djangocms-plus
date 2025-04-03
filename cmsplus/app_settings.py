@@ -5,6 +5,8 @@ from cmsplus.utils import JSONEncoder
 DEFAULTS = {
     'PLUGINS': (
         'cmsplus.cms_plugins.bootstrap.plugins.GridContainerPlugin',
+        'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
+        'cmsplus.cms_plugins.bootstrap.plugins.GridColumnPlugin',
         'cmsplus.cms_plugins.bootstrap.plugins.ImagePlugin',
         'cmsplus.cms_plugins.bootstrap.plugins.EmbedPlugin',
         'cmsplus.cms_plugins.generic.MultiColumnTextPlugin',
@@ -158,6 +160,7 @@ DEFAULTS = {
 
     'BGIMG_FILTER_CHOICES': (
         ('', 'None'),
+        ('linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))')
     ),
 
     # show and hide icons in project

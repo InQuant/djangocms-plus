@@ -84,7 +84,7 @@ class StylePluginMixin:
         fields.append("extra_style")
         fields.append("extra_css")
         return insert_fields(
-            super().get_fieldsets(request, obj),
+            fieldsets,
             fields,
             blockname=_("Advanced settings"),
             blockattrs=self.block_attr,

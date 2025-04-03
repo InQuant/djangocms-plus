@@ -1,6 +1,7 @@
 from django.utils.functional import cached_property
 from djangocms_frontend.models import FrontendUIItem
 from djangocms_frontend.contrib.link.models import GetLinkMixin
+from djangocms_frontend.frameworks.bootstrap5 import FRAMEWORK_PLUGIN_INFO
 
 class PlusItemMixin:
     def __str__(self):
@@ -57,6 +58,11 @@ class PlusItemMixin:
             _css = ';'.join(['%s:%s' % (k, v) for k, v in css_lines])
             css.append((media, _css))
         return css
+
+    @property
+    def framework_info(self):
+        return FRAMEWORK_PLUGIN_INFO
+
     
 class PlusItem(PlusItemMixin, FrontendUIItem):
     class Meta:

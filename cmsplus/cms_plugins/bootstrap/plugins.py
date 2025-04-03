@@ -4,13 +4,16 @@ import urllib.parse
 from django.utils.translation import gettext_lazy as _
 
 from djangocms_frontend.contrib.grid.cms_plugins import GridContainerPlugin as GridContainerPluginBase
+from djangocms_frontend.contrib.grid.cms_plugins import GridRowPlugin as GridRowPluginBase
+from djangocms_frontend.contrib.grid.cms_plugins import GridColumnPlugin as GridColumnPluginBase
 from djangocms_frontend.helpers import insert_fields, is_first_child
 from djangocms_frontend.common import AttributesMixin, ResponsiveMixin, MarginMixin
 from djangocms_frontend.contrib.link.cms_plugins import LinkPluginMixin
+from djangocms_frontend import settings as fe_settings
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.cms_plugins.bootstrap.models import PlusImage
-from cmsplus.cms_plugins.bootstrap.forms import GridContainerForm, PlusImageForm, EmbedForm
+from cmsplus.cms_plugins.bootstrap.forms import GridContainerForm, GridRowForm, GridColumnForm, PlusImageForm, EmbedForm
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_field_names
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, StylePluginMixin
@@ -54,29 +57,8 @@ class BackgroundImagePropertiesMixin():
             'crop': crop,  # boolean or str
         }
 
-
-class GridContainerPlugin(
-    StylePluginMixin,
-    BackgroundImagePropertiesMixin,
-    GridContainerPluginBase
-):
-    footnote_html = """
-    Renders a bootstrap container fix or fluid for device classes of:
-     <ul>
-     <li>XS: Portrait Phones (<576px)</li>
-     <li>SM: Small Tablets  (≥576px and <768px)</li>
-     <li>MD: Tablets (≥768px and <992px)</li>
-     <li>LG: Laptops (≥992px and <1.200px)</li>
-     <li>XL: Desktops (≥1.200px and <1.600px)</li>
-     <li>XXL: Large Desktops (≥1.600px and < 1.900px)</li>
-     <ul>
-    """
-    form = GridContainerForm
-    model = PlusItem
-    allow_children = True
-    parent_classes = None
-    require_parent = False
-    render_template = "cmsplus/bootstrap/container.html"
+class GridImagePluginMixin(StylePluginMixin, BackgroundImagePropertiesMixin):
+    image_field_set_position = 1
 
     def get_fieldsets(self, request, obj=None):
         """Extend the fieldset of the plugin to contain the new fields
@@ -100,7 +82,7 @@ class GridContainerPlugin(
                 get_img_dev_width_field_names()
             ),
             block=None,  # Create a new fieldset (called block here)
-            position=1,  # at position 1 (directly after the container fieldset)
+            position=self.image_field_set_position,  # at position 1 (directly after the container fieldset)
             blockname=_("Image"),  # and call the fieldset "Image"
         )
 
@@ -110,6 +92,56 @@ class GridContainerPlugin(
             instance.add_classes(f"container-image-{instance.id}")
             context.update(self.eval_background_image_props(instance))
         return super().render(context, instance, placeholder)
+
+class GridContainerPlugin(GridImagePluginMixin, GridContainerPluginBase):
+    footnote_html = """
+    Renders a bootstrap container fix or fluid for device classes of:
+     <ul>
+     <li>XS: Portrait Phones (<576px)</li>
+     <li>SM: Small Tablets  (≥576px and <768px)</li>
+     <li>MD: Tablets (≥768px and <992px)</li>
+     <li>LG: Laptops (≥992px and <1.200px)</li>
+     <li>XL: Desktops (≥1.200px and <1.600px)</li>
+     <li>XXL: Large Desktops (≥1.600px and < 1.900px)</li>
+     <ul>
+    """
+    form = GridContainerForm
+    model = PlusItem
+    allow_children = True
+    parent_classes = None
+    require_parent = False
+    render_template = "cmsplus/bootstrap/container.html"
+
+
+class GridRowPlugin(GridImagePluginMixin, GridRowPluginBase):
+    footnote_html = """
+    Renders a bootstrap row.
+    """
+    name = "Row"
+    form = GridRowForm
+    model = PlusItem
+    allow_children = True
+    parent_classes = None
+    child_classes = None
+    require_parent = False
+    render_template = "cmsplus/bootstrap/container.html"
+    image_field_set_position = 3 # for GridImagePluginMixin
+
+
+class GridColumnPlugin(GridImagePluginMixin, GridColumnPluginBase):
+    footnote_html = """
+    Renders a bootstrap row.
+    """
+    name = "Column"
+    form = GridColumnForm
+    model = PlusItem
+    parent_classes = ["GridRowPlugin"]
+    child_classes = None
+    allow_children = True
+    require_parent = True
+    render_template = "cmsplus/bootstrap/container.html"
+    image_field_set_position = 3 # for GridImagePluginMixin
+
 
 # Image
 # -----
@@ -194,7 +226,6 @@ class ImagePlugin(
         )
         
         # put srcset and srcset_sizes into context
-        print('srcset: ', instance.srcset_data)
         context['srcset'] = instance.srcset_data.get('srcset', {})
         context['srcset_sizes'] = instance.srcset_data.get('srcset_sizes', [])
 

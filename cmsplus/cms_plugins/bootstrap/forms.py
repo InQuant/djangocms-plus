@@ -6,10 +6,15 @@ from django.utils.translation import gettext_lazy as _
 
 from entangled.forms import EntangledModelForm, EntangledModelFormMixin
 from djangocms_frontend.contrib.grid.forms import GridContainerForm as GridContainerFormBase
+from djangocms_frontend.contrib.grid.forms import GridRowBaseForm as GridRowFormBase
+from djangocms_frontend.contrib.grid.forms import GridColumnForm as GridColumnFormBase
 from djangocms_frontend import settings as fe_settings
 from djangocms_frontend.common import ResponsiveFormMixin, MarginFormMixin
 from djangocms_frontend.fields import AttributesFormField, TagTypeFormField
 from djangocms_frontend.contrib.link.forms import AbstractLinkForm
+from djangocms_frontend.contrib.grid.constants import (
+    GRID_SIZE,
+)
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import PlusFilerImageSearchField
@@ -93,14 +98,6 @@ class GridContainerFormMixin(PlusStyleEntangledFormMixin, EntangledModelFormMixi
             ] + get_img_dev_width_field_names()
         }
 
-
-class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
-    class Meta:
-        model = PlusItem
-        entangled_fields = {
-            "config": []
-        }
-
     def clean(self):
         super().clean()
         try:
@@ -112,6 +109,45 @@ class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
         except:
             pass
 
+
+class GridContainerForm(GridContainerFormMixin, GridContainerFormBase):
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": []
+        }
+
+
+class GridRowColsMixin(EntangledModelFormMixin):
+
+    row_cols_xs = forms.IntegerField(label="row-cols", required=False, min_value=1, max_value=GRID_SIZE)
+    row_cols_sm =  forms.IntegerField(label="row-cols-sm", required=False, min_value=1, max_value=GRID_SIZE)
+    row_cols_md =  forms.IntegerField(label="row-cols-md", required=False, min_value=1, max_value=GRID_SIZE)
+    row_cols_lg =  forms.IntegerField(label="row-cols-lg", required=False, min_value=1, max_value=GRID_SIZE)
+    row_cols_xl =  forms.IntegerField(label="row-cols-xl", required=False, min_value=1, max_value=GRID_SIZE)
+    row_cols_xxl =  forms.IntegerField(label="row-cols-xxl", required=False, min_value=1, max_value=GRID_SIZE)
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": ['row_cols_xs', 'row_cols_sm', 'row_cols_md', 'row_cols_lg', 'row_cols_xl', 'row_cols_xxl']
+        }
+
+
+class GridRowForm(GridContainerFormMixin, GridRowColsMixin, GridRowFormBase):
+
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": []
+        }
+
+
+class GridColumnForm(GridContainerFormMixin, GridColumnFormBase):
+    class Meta:
+        model = PlusItem
+        entangled_fields = {
+            "config": []
+        }
 
 # Image Form
 # ----------
