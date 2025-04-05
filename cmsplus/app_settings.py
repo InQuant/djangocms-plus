@@ -5,7 +5,7 @@ from cmsplus.utils import JSONEncoder
 class CmsPlusSettings:
 
     PLUGINS = (
-        'cmsplus.cms_plugins.bootstrap.LinkPlugin',
+        'cmsplus.cms_plugins.bootstrap.link.LinkPlugin',
         'cmsplus.cms_plugins.bootstrap.icon.IconPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridContainerPlugin',
         #'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
@@ -152,6 +152,9 @@ class CmsPlusSettings:
         'meta': 'cmsplus/icons/fontawesome/metadata/icons.json',
         'css': 'cmsplus/icons/fontawesome/css/all.css',
     }
+
+    BOOTSTRAP_CSS = 'frontend/node_modules/bootstrap/dist/css/bootstrap.min.css'
+    BOOTSTRAP_JS = 'frontend/node_modules/bootstrap/dist/js/bootstrap.min.js'
 
     # https://github.com/twbs/icons
     ICONS_BOOTSTRAP_SHOW = True

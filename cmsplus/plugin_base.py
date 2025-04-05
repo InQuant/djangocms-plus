@@ -217,6 +217,7 @@ class PlusStylePlugin(PlusPlugin):
 
 
 class LinkPluginMixin:
+    link_fieldset_index = 1
 
     def get_form(self, request, obj=None, change=False, **kwargs):
         """The link form needs the request object to check permissions"""
@@ -237,7 +238,7 @@ class LinkPluginMixin:
             'classes': (css,),
             'fields': ('link', 'target'),
         })
-        return insert_fieldset(fieldsets, link_fieldset, 0, ['link', 'target'])
+        return insert_fieldset(fieldsets, link_fieldset, self.link_fieldset_index, ['link', 'target'])
 
     def render(self, context, instance, placeholder):
         if "request" in context:

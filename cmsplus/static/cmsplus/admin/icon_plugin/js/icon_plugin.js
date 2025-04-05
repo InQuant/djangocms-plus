@@ -1,18 +1,37 @@
-jQuery(document).ready(function ($) {
-    let selected_icon = $(document).find('.highlight-selected-icon');
-    let hidden_input = $('#hidden-icon-field');
+document.addEventListener("DOMContentLoaded", function () {
+  document.querySelectorAll(".icon-field-widget").forEach(widget => {
+    const selectedIconContainer = widget.querySelector(".highlight-selected-icon");
+    const selectedIcon = widget.querySelector(".selected-icon");
+    const selectedIconName = widget.querySelector(".selected-icon-name");
+    const hiddenInput = widget.querySelector(".hidden-icon-field");
+    const iconButtons = widget.querySelectorAll(".icon-select-btn");
+    const iconSearch = widget.querySelector(".icon-search");
 
-    $(document).on('click', 'button.field-plugin-icon-select', () => {
-        let font_class_name = $(this.activeElement).data('icon-class')
-        let icon_name = $(this.activeElement).data('icon-name')
+    const modalId = "iconSelectModal-" + widget.dataset.widgetId;
+    const modalElement = document.getElementById(modalId);
 
-        console.log('click');
+    iconButtons.forEach(button => {
+      button.addEventListener("click", function () {
+        const iconClass = this.getAttribute("data-icon-class");
+        const iconName = this.getAttribute("data-icon-name");
 
-        // set hidden input value
-        hidden_input.val(font_class_name);
+        selectedIcon.className = "selected-icon " + iconClass;
+        selectedIconName.textContent = iconName;
+        hiddenInput.value = iconClass;
+        selectedIconContainer.style.display = "block";
 
-        selected_icon.find('i').removeClass().addClass(font_class_name)
-        selected_icon.find('.name').text(icon_name)
-        selected_icon.show();
+        // Modal schließen (Bootstrap 5)
+        const modalInstance = bootstrap.Modal.getInstance(modalElement);
+        modalInstance.hide();
+      });
     });
+
+    iconSearch.addEventListener("input", function () {
+      const filter = this.value.toLowerCase();
+      iconButtons.forEach(button => {
+        const name = button.getAttribute("data-icon-name").toLowerCase();
+        button.style.display = name.includes(filter) ? "inline-block" : "none";
+      });
+    });
+  });
 });

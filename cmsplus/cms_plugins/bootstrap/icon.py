@@ -15,7 +15,7 @@ from cmsplus.plugin_base import LinkPluginMixin, PlusStylePlugin
 
 
 class IconFieldWidget(forms.Widget):
-    template_name = "cmsplus/forms/widgets/icon.html"
+    template_name = "cmsplus/admin/widgets/icon.html"
     icons = []
 
     def __init__(self, attrs=None):
@@ -150,11 +150,13 @@ class IconField(forms.CharField):
     widget = IconFieldWidget
 
 
-class IconForm(LinkFormMixin, PlusStylePluginFormBase):
+class IconFormMixin(forms.Form):
+    icon = IconField(required=True)
+
+
+class IconForm(LinkFormMixin, IconFormMixin, PlusStylePluginFormBase):
     require_link = False
     STYLE_CHOICES = 'MOD_ICON_STYLES'
-
-    icon = IconField(required=True)
 
 
 def get_icon_style_paths():
@@ -171,7 +173,12 @@ def get_icon_style_paths():
     return paths
 
 
-class IconPlugin(LinkPluginMixin, PlusStylePlugin):
+class IconPluginMixin:
+    class Media:
+        css = {'all': ['cmsplus/admin/icon_plugin/css/icon_plugin.css'] + get_icon_style_paths()}
+        js = ['cmsplus/admin/icon_plugin/js/icon_plugin.js']
+
+class IconPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
     footnote_html = """
     Choose icon from font defined in the settings
     """
@@ -180,11 +187,13 @@ class IconPlugin(LinkPluginMixin, PlusStylePlugin):
     render_template = "cmsplus/bootstrap/icon.html"
     allow_children = False
     text_enabled = True
-
-    class Media:
-        css = {'all': ['cmsplus/admin/icon_plugin/css/icon_plugin.css'] + get_icon_style_paths()}
-        js = ['cmsplus/admin/icon_plugin/js/icon_plugin.js']
+    tag_type = 'i'
 
     @classmethod
     def get_identifier(cls, instance):
         return instance.glossary.get('icon')
+
+    def render(self, context, instance, placeholder):
+        if instance.icon:
+            instance.add_classes(instance.icon)
+        return super().render(context, instance, placeholder)

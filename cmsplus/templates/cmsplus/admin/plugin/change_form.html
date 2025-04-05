@@ -1,5 +1,13 @@
 {% extends "admin/change_form.html" %}
-{% load cms_admin cms_static i18n %}
+{% load cms_admin cms_static static i18n %}
+
+{% block extrahead %}
+  <link href="{% static 'frontend/node_modules/bootstrap/dist/css/bootstrap.min.css' %}" rel="stylesheet" type="text/css" />
+  <link href="{% static 'frontend/node_modules/bootstrap-icons/font/bootstrap-icons.min.css' %}" rel="stylesheet" type="text/css" />
+  <script src="{% static 'frontend/node_modules/bootstrap/dist/js/bootstrap.bundle.min.js' %}" type="text/javascript"></script>
+  {{ block.super }}
+  {# applies the customizing from _variables.scss to frontend plugin layouts #}
+{% endblock %}
 
 {% block after_field_sets %}
     {{ block.super }}
