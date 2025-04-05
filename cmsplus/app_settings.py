@@ -6,6 +6,7 @@ class CmsPlusSettings:
 
     PLUGINS = (
         'cmsplus.cms_plugins.bootstrap.LinkPlugin',
+        'cmsplus.cms_plugins.bootstrap.icon.IconPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridContainerPlugin',
         #'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
         #'cmsplus.cms_plugins.bootstrap.plugins.GridColumnPlugin',
@@ -155,8 +156,8 @@ class CmsPlusSettings:
     # https://github.com/twbs/icons
     ICONS_BOOTSTRAP_SHOW = True
     ICONS_BOOTSTRAP = {
-        'meta': 'cmsplus/icons/bs/bootstrap-icons.json',
-        'css': 'cmsplus/icons/bs/bootstrap-icons.css',
+        'meta': 'frontend/node_modules/bootstrap-icons/font/bootstrap-icons.json',
+        'css': 'frontend/node_modules/bootstrap-icons/font/bootstrap-icons.css',
     }
 
     # custom fontello font packs
@@ -205,7 +206,9 @@ class CmsPlusSettings:
         self.site_settings = site_settings
 
     def __getattr__(self, attr):
-        return self.site_settings.get(attr) if attr in self.site_settings else getattr(self, attr)
+        if attr in self.site_settings:
+            return self.site_settings.get(attr)
+        return super().__getattr__(attr)
 
 
 cmsplus_settings = CmsPlusSettings(getattr(settings, 'CMSPLUS', {}))
