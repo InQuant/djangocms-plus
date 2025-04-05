@@ -1,29 +1,24 @@
 import logging
 
-from copy import copy
 from collections import OrderedDict
 from django import forms
 from django.core.exceptions import ValidationError
+from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
-from djangocms_frontend import settings as fe_settings
-from djangocms_frontend.fields import AttributesFormField
-from djangocms_frontend.contrib.link import constants as link_const
-from djangocms_frontend.common.title import TitleField
 from djangocms_link.fields import LinkFormField
-from entangled.forms import EntangledModelForm, EntangledModelFormMixin
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.models import PlusItem
-from cmsplus.fields import PlusFilerImageSearchField
+from cmsplus.fields import PlusFilerImageSearchField, AttributesFormField, TitleField
 
 
 logger = logging.getLogger(__name__)
 
 
-class DeserializeMixin:
+class SerializeMixin:
 
-    def deserialize(self):
+    def deserialize_data(self):
         """
         Deserialize data from Json field into dict. Opposite of serialize function (see above)
         :return: Data
@@ -48,116 +43,6 @@ class DeserializeMixin:
 
         return parsed_dict
 
-
-class PlusPluginForm(DeserializeMixin, forms.ModelForm):
-    class Meta:
-        model = PlusItem
-        exclude = ['ui_item', 'config', 'tag_type']
-
-# StylePluginMixin form fields
-# ----------------------------
-#
-def get_style_form_fields(style_config_key="", style_multiple=False):
-    """
-    Use together with StylePluginMixin, e.g.
-
-    class MyCustomForm(PlusPluginForm):
-        ...  # form defs
-
-        STYLE_CHOICES = 'MY_CUSTOM_STYLES'
-        plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
-
-
-    class MyCustomPlugin(StylePluginMixin, PlusPluginBase):
-        name = _('My Custom')
-        form = MyCustomForm
-        render_template = 'custom/snippet.html'
-
-    style_config_key should be a cmsplus_settings - key which holds the
-    style choices, e.g.: ('c-text-white', 'Text White'), ...
-    """
-    style_choices = (
-        ('', 'None'),
-    )
-
-    sc = getattr(cps, style_config_key, style_choices)
-    if style_multiple:
-        style_field = forms.MultipleChoiceField
-    else:
-        style_field = forms.ChoiceField
-
-    return [
-        TitleField(
-            label=_("Title"),
-            required=False,
-            help_text=_(
-                "Optional title of the plugin for easier identification. "
-                "Its <code>title</code> attribute "
-                "will only be set if the checkbox is selected."
-            ),
-        ),
-        style_field(
-            label=_('Style'), required=False, choices=sc,
-            initial=sc[0][0], help_text=_('Extra CSS predefined style class for plugin.')
-        ),
-        AttributesFormField(
-            label=_('Extra CSS'), required=False, initial='',
-            help_text=_('Add extra (device specific) css key, values, e.g: margin or margin:md or transform:xl'))
-    ]
-
-
-class PlusStyleEntangledFormMixin(DeserializeMixin, EntangledModelFormMixin):
-
-    attributes = AttributesFormField()
-    extra_style = get_style_form_fields()[1]
-    extra_css = get_style_form_fields()[2]
-    class Meta:
-        entangled_fields = {
-            "config": ['attributes', 'extra_style', 'extra_css']
-        }
-
-    def __init_subclass__(cls, **kwargs):
-        """ needed to get STYLE_CHOICES* from the class which uses this Mixin
-        """
-        super().__init_subclass__(**kwargs)
-        choices_name = getattr(cls, 'STYLE_CHOICES', None)
-        choices_multiple_name = getattr(cls, 'STYLE_CHOICES_MULTIPLE', None)
-        style_field = get_style_form_fields(choices_name, choices_multiple_name)[1]
-        cls.declared_fields['extra_style'] = style_field
-
-
-class PlusPluginFormBase(DeserializeMixin, forms.ModelForm):
-    """
-    BaseForm for all none Entangled PluginForms.
-    This ModelForm references to a PlusItem Model in order to write and read
-    from the glossary (JSONField) attribute.
-    """
-    attributes = AttributesFormField()
-
-    class Meta:
-        model = PlusItem
-        exclude = ['ui_item', 'config', 'tag_type']  # Do not show those fields in edit form
-
-    def __init__(self, *args, **kwargs):
-
-        if kwargs.get('instance'):
-            # set form initial values as our instance model attributes are in
-            # glossary not in the instance itself
-            initial = kwargs.get('initial', {})
-
-            for field_name, field in self.declared_fields.items():
-                initial[field_name] = kwargs.get('instance').glossary.get(field_name)
-
-            kwargs['initial'] = initial
-        super(PlusPluginFormBase, self).__init__(*args, **kwargs)
-
-    def save(self, commit=True):
-        """
-        Put serialized data to glossary (_json) field, then save.
-        """
-        self.instance.config = self.serialize_data()
-        return super(PlusPluginFormBase, self).save(commit)
-
     def serialize_data(self):
         """
         Takes form field values and calls "serialize_field" method for each field,
@@ -179,10 +64,95 @@ class PlusPluginFormBase(DeserializeMixin, forms.ModelForm):
         return parsed_data
 
 
-# Abstract Link Form
-# ------------------
+class PlusPluginFormBase(SerializeMixin, forms.ModelForm):
+    """
+    BaseForm for all  PluginForms.
+    This ModelForm references to a PlusItem Model in order to write and read
+    from the glossary (JSONField) attribute.
+    """
+
+    plugin_title = TitleField(
+        label=_("Title"),
+        required=False,
+        help_text=_(
+            "Optional title of the plugin for easier identification. "
+            "Its <code>title</code> attribute "
+            "will only be set if the checkbox is selected."
+        ),)
+
+    attributes = AttributesFormField(
+        label=_('Attributes'), required=False, initial='',
+        help_text=_('Add extra html attributes, e.g: class="mx-3 mx-lg-5"'))
+
+    class Meta:
+        model = PlusItem
+        exclude = ['_json']
+
+    def __init__(self, *args, **kwargs):
+        if kwargs.get('instance'):
+            # set form initial values as our instance model attributes are in
+            # glossary not in the instance itself
+            initial = kwargs.get('initial', {})
+
+            for field_name, field in self.declared_fields.items():
+                initial[field_name] = kwargs.get('instance').glossary.get(field_name)
+
+            kwargs['initial'] = initial
+        super().__init__(*args, **kwargs)
+
+    def save(self, commit=True):
+        """
+        Put serialized data to glossary (config) field, then save.
+        """
+        self.instance.config = self.serialize_data()
+        return super().save(commit)
+
+
+# Style Form
+# ----------
 #
-class AbstractLinkForm(PlusPluginFormBase):
+class PlusStylePluginFormBase(PlusPluginFormBase):
+    style_choices = (
+        ('', 'None'),
+    )
+
+    extra_style = forms.ChoiceField(
+            label=_('Style'), required=False, choices=style_choices,
+            initial='', help_text=_('Extra CSS predefined style class for plugin.')
+        )
+    extra_css = AttributesFormField(
+            label=_('Extra CSS'), required=False, initial='',
+            help_text=_('Add extra (device specific) css key, values, e.g: margin or margin:md or transform:xl')
+        )
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if getattr(self, 'STYLE_CHOICES', None):
+            choices = getattr(cps, getattr(self, 'STYLE_CHOICES'), None)
+            if choices:
+                self.fields['extra_style'].choices = choices
+                self.fields['extra_style'].initial = choices[0][0]
+        elif getattr(self, 'MULTIPLE_STYLE_CHOICES', None):
+            choices = getattr(cps, getattr(self, 'MULTIPLE_STYLE_CHOICES'), None)
+            if choices:
+                self.fields['extra_style'] = forms.MultipleChoiceField(
+                    label=_('Style'), choices=choices, required=False,
+                    initial=choices[0][0],
+                    help_text=_('Extra predefined style classes for plugin.')
+                )
+
+
+# Link Form Mixin
+# ---------------
+#
+TARGET_CHOICES = (
+    ("_blank", _("Open in new window")),
+    ("_self", _("Open in same window")),
+    ("_parent", _("Delegate to parent")),
+    ("_top", _("Delegate to top")),
+)
+class LinkFormMixin(forms.Form):
 
     link_is_optional = True
 
@@ -191,43 +161,21 @@ class AbstractLinkForm(PlusPluginFormBase):
         initial={},
         required=False,
     )
+
     target = forms.ChoiceField(
         label=_("Target"),
-        choices=fe_settings.EMPTY_CHOICE + link_const.TARGET_CHOICES,
+        choices=cps.EMPTY_CHOICE + TARGET_CHOICES,
         required=False,
     )
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.fields["link"].required = not self.link_is_optional
+    def __init_subclass__(cls, **kwargs):
+        super().__init_subclass__(**kwargs)
+        cls.base_fields["link"].required = not cls.link_is_optional
 
-# image form fields
-# -----------------
-#
-def get_image_form_fields(required=False, help_text=''):
-    """
-    Can be used to insert image form fields into the custom plugin form
-    definition. call e.g.:
-    image_file, image_title, image_alt = get_image_form_fields(required=True)
-    """
-    return (
-       PlusFilerImageSearchField(
-           label=_('Image File'),
-           required=required,
-           help_text=help_text
-           ),
-
-       forms.CharField(
-           label=_('Image Title'),
-           required=False,
-           help_text=_(
-               'Caption text added to the "title" attribute of the ' '<img> element.'),
-           ),
-
-       forms.CharField(
-           label=_('Alternative Description'),
-           required=False,
-           help_text=_(
-               'Textual description of the image added to the "alt" ' 'tag of the <img> element.'),
-           )
-       )
+    def clean(self):
+        super(LinkFormMixin, self).clean()
+        if not self.link_is_optional and not self.cleaned_data['link']:
+            raise ValidationError(
+                force_str(_("Link is required.")),
+                code="required",
+            )

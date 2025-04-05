@@ -4,19 +4,22 @@ from cmsplus.utils import JSONEncoder
 
 DEFAULTS = {
     'PLUGINS': (
-        'cmsplus.cms_plugins.bootstrap.plugins.GridContainerPlugin',
-        'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
-        'cmsplus.cms_plugins.bootstrap.plugins.GridColumnPlugin',
-        'cmsplus.cms_plugins.bootstrap.plugins.ImagePlugin',
-        'cmsplus.cms_plugins.bootstrap.plugins.EmbedPlugin',
-        'cmsplus.cms_plugins.generic.MultiColumnTextPlugin',
-        'cmsplus.cms_plugins.generic.SnippetPlugin',
-        'cmsplus.cms_plugins.generic.SvgImagePlugin',
+        'cmsplus.cms_plugins.bootstrap.LinkPlugin',
+        'cmsplus.cms_plugins.bootstrap.grid.GridContainerPlugin',
+        #'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
+        #'cmsplus.cms_plugins.bootstrap.plugins.GridColumnPlugin',
+        #'cmsplus.cms_plugins.bootstrap.plugins.ImagePlugin',
+        #'cmsplus.cms_plugins.bootstrap.plugins.EmbedPlugin',
+        #'cmsplus.cms_plugins.generic.MultiColumnTextPlugin',
+        #'cmsplus.cms_plugins.generic.SnippetPlugin',
+        #'cmsplus.cms_plugins.generic.SvgImagePlugin',
         #'cmsplus.cms_plugins.generic.BackgroundVideoPlugin',
-        'cmsplus.cms_plugins.generic.slider.SlidePlugin',
-        'cmsplus.cms_plugins.generic.slider.SliderPlugin',
+        #'cmsplus.cms_plugins.generic.slider.SlidePlugin',
+        #'cmsplus.cms_plugins.generic.slider.SliderPlugin',
         #'cmsplus.cms_plugins.generic.AudioEmbedPlugin',
     ),
+
+    'EMPTY_CHOICE': (("", "-----"),),
 
     'JSON_ENCODER_CLASS': JSONEncoder,
 
@@ -27,31 +30,19 @@ DEFAULTS = {
     ),
 
     'DEVICES': ('xs', 'sm', 'md', 'lg', 'xl', 'xxl'),
-    'DEVICE_MAP': {'xs': 'phone', 'sm': 'tablet sm', 'md': 'tablet', 'lg': 'desktop', 'xl': 'desktop xl', 'xxl': 'desktop xxl',  },
+    'DEVICE_MAP': {'xs': 'phone', 'sm': 'tablet small', 'md': 'tablet', 'lg': 'desktop', 'xl': 'desktop xl', 'xxl': 'desktop xxl',  },
     'DEVICE_MAX_WIDTH_MAP': {'xs': 575, 'sm': 767, 'md': 991, 'lg': 1199, 'xl': 1399, 'xxl': 1899,  },
     'DEVICE_MIN_WIDTH_MAP': {'xs': 0, 'sm': 576, 'md': 768, 'lg': 992, 'xl': 1200, 'xxl': 1400 },
 
-    'TEXT_COLOR_CHOICES': (
-        ('', 'Default'),
-        ('text-primary', 'Primary'),
-        ('text-secondary', 'Secondary'),
-        ('text-light', 'Light'),
-        ('text-dark', 'Dark'),
-        ('text-info', 'Info'),
-        ('text-success', 'Success'),
-        ('text-warning', 'Warning'),
-        ('text-danger', 'Danger'),
-    ),
-    'BG_COLOR_CHOICES': (
-        ('', 'Transparent'),
-        ('bg-primary', 'Primary'),
-        ('bg-secondary', 'Secondary'),
-        ('bg-light', 'Light'),
-        ('bg-dark', 'Dark'),
-        ('bg-info', 'Info'),
-        ('bg-success', 'Success'),
-        ('bg-warning', 'Warning'),
-        ('bg-danger', 'Danger'),
+    'COLOR_CHOICES': (
+        ('primary', 'Primary'),
+        ('secondary', 'Secondary'),
+        ('light', 'Light'),
+        ('dark', 'Dark'),
+        ('info', 'Info'),
+        ('success', 'Success'),
+        ('warning', 'Warning'),
+        ('danger', 'Danger'),
     ),
     'RL_MARGIN_CHOICES': (
         ('1cw', '1 Col'),
@@ -126,19 +117,9 @@ DEFAULTS = {
     ),
 
     'CNT_BOTTOM_MARGIN_CHOICES': (
-        ('mb-3 mb-md-5', 'Default'),
-        ('mb-2 mb-md-3', 'Small'),
-        ('', 'None'),
-    ),
-    'ROW_BOTTOM_MARGIN_CHOICES': (
         ('', 'None'),
         ('mb-3 mb-md-5', 'Default'),
         ('mb-2 mb-md-3', 'Small'),
-    ),
-    'COL_BOTTOM_MARGIN_CHOICES': (
-        ('mb-3 mb-md-5', 'Default'),
-        ('mb-2 mb-md-3', 'Small'),
-        ('', 'None'),
     ),
 
     'TX_COL_CHOICES': (
@@ -160,7 +141,7 @@ DEFAULTS = {
 
     'BGIMG_FILTER_CHOICES': (
         ('', 'None'),
-        ('linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))')
+        ('linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))', 'black top')
     ),
 
     # show and hide icons in project

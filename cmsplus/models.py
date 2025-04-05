@@ -1,17 +1,29 @@
+from uuid import uuid4
+from cms.models import CMSPlugin
+from django.conf import settings
+from django.db import models
 from django.utils.functional import cached_property
-from djangocms_frontend.models import FrontendUIItem
-from djangocms_frontend.contrib.link.models import GetLinkMixin
-from djangocms_frontend.frameworks.bootstrap5 import FRAMEWORK_PLUGIN_INFO
+from django.utils.html import conditional_escape, mark_safe
+from django.utils.translation import gettext_lazy as _
+
+from djangocms_link.helpers import get_link
+
+from cmsplus.app_settings import settings as cps
 
 class PlusItemMixin:
+
+    def __init__(self, *args, **kwargs):
+        self._additional_classes = []
+        super().__init__(*args, **kwargs)
+
     def __str__(self):
-        return self.get_short_description()
+        return str(self.get_short_description())
 
     def get_short_description(self):
-        return self.title or self._meta.verbose_name
+        return self.title or self.plugin_class.get_identifier(self) or self._meta.verbose_name
     
     def __getattr__(self, item):
-        """Makes properties of plugin config available as plugin properties."""
+        """Makes properties of plugin glossary available as plugin properties."""
         if item[0] != "_" and item in self.glossary:  # Avoid infinite recursion trying to get .config from db
             return self.glossary.get(item)
         return super().__getattribute__(item)
@@ -21,6 +33,31 @@ class PlusItemMixin:
             self.plugin_class.sanitize_model(self)
         self._glossary = None
         super().save(*args, **kwargs)
+
+    def add_classes(self, *args):
+        for arg in args:
+            if arg:
+                self._additional_classes += arg.split() if isinstance(arg, str) else arg
+
+    def add_attribute(self, attr, value=None):
+        attrs = self.glossary.get("attributes", {})
+        if attr == "style" and attr in attrs:
+            value += attrs[attr]
+        attrs.update({attr: value})
+        self.glossary["attributes"] = attrs
+
+    def get_attributes(self):
+        attributes = self.glossary.get("attributes", {})
+        classes = set(attributes.get("class", "").split())  # classes added in attriutes
+        classes.update(self._additional_classes)  # add additional classes
+        classes = (f'class="{conditional_escape(" ".join(classes))}"') if classes else ""  # to string
+        parts = (
+            f'{item}="{conditional_escape(value)}"' if value else f"{item}"
+            for item, value in attributes.items()
+            if item != "class"
+        )
+        attributes_string = (classes + " ".join(parts)).strip()
+        return mark_safe(" " + attributes_string) if attributes_string else ""
 
     @property
     def glossary(self):
@@ -33,6 +70,10 @@ class PlusItemMixin:
         glossary = self.plugin_class.get_glossary(self)
         form = self.plugin_class.form(data=glossary)
         return form.errors
+
+    @property
+    def tag_type(self):
+        return self.plugin_class.get_tag_type(self)
 
     @property
     def title(self):
@@ -59,17 +100,25 @@ class PlusItemMixin:
             css.append((media, _css))
         return css
 
+
+
+class LinkItemMixin:
+
+    def get_link(self, site_id=None):
+        return get_link(self.link, site_id)
+
+
+class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
+    #_json = models.JSONField(dump_kwargs={'cls': cps.JSON_ENCODER_CLASS})
+    _json = models.JSONField()
+    class Meta:
+        verbose_name = "Plus item"
+
     @property
-    def framework_info(self):
-        return FRAMEWORK_PLUGIN_INFO
+    def config(self):
+        """ raw glossary data """
+        return self._json
 
-    
-class PlusItem(PlusItemMixin, FrontendUIItem):
-    class Meta:
-        proxy = True
-        verbose_name = "PUI item"
-
-class PlusLinkedItem(GetLinkMixin, PlusItem):
-    class Meta:
-        proxy = True
-        verbose_name = "PUI item"
+    @config.setter
+    def config(self, value: dict):  # noqa E999
+        self._json = value

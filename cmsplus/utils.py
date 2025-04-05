@@ -349,3 +349,45 @@ def strip_html_tags(html):
     s = HtmlTagStripper()
     s.feed(html)
     return s.get_data()
+
+def insert_fieldset(fieldsets, new_fieldset, index=1, none_fields_to_remove=[]):
+    """insert new_fieldset at index, returns a new copy of fieldsets.
+
+    Args:
+        fieldsets (list): given fieldsets
+        new_fieldset (list): new fieldset
+        index (int, optional): The index to insert new fieldset. Defaults to 1.
+        none_fields_to_remove (list, optional): list of fieldnames to remove from None-Section. Defaults to [].
+
+    Returns:
+        list: new fieldsets
+    """
+    fieldsets = copy.copy(fieldsets)
+    new_fieldsets = []
+
+    # 1. Find all image_fields in None Section
+    for name, opts in fieldsets:
+        if name is None:
+            # Remove fields given from None-Section
+            original_fields = list(opts['fields'])
+            remaining_fields = [f for f in original_fields if f not in none_fields_to_remove]
+
+            if remaining_fields:
+                new_fieldsets.append((None, {'fields': remaining_fields}))
+        else:
+            new_fieldsets.append((name, opts))
+
+    # 2. insert new fieldset
+    new_fieldsets.insert(index, new_fieldset)
+
+    return new_fieldsets
+
+def first_choice(choices):
+    for value, verbose in choices:
+        if not isinstance(verbose, (tuple, list)):
+            return value
+        else:
+            first = first_choice(verbose)
+            if first is not None:
+                return first
+    return None

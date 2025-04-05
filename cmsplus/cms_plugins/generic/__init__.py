@@ -8,16 +8,16 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import SizeField, PlusFilerFileSearchField
-from cmsplus.forms import (PlusPluginFormBase, get_style_form_fields, AbstractLinkForm)
-from cmsplus.plugin_base import StylePluginMixin, PlusPlugin, LinkPluginMixin
+from cmsplus.fields import PlusFilerFileSearchField
+from cmsplus.forms import PlusPluginFormBase, PlusStylePluginFormBase, LinkFormMixin
+from cmsplus.plugin_base import PlusStylePlugin, LinkPluginMixin
+
 
 # MultiColTextPlugin
 # ------------------
 #
 class MultiColTextForm(PlusPluginFormBase):
     STYLE_CHOICES = 'MOD_COL_STYLES'
-    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
     @staticmethod
     def _get_col_choice_field(dev):
@@ -42,7 +42,7 @@ class MultiColTextForm(PlusPluginFormBase):
 MultiColTextForm.extend_col_fields()
 
 
-class MultiColumnTextPlugin(StylePluginMixin, PlusPlugin):
+class MultiColumnTextPlugin(PlusStylePlugin):
     footnote_html = """
     renders a wrapper for a multi column text.
     """
@@ -89,10 +89,9 @@ class SnippetForm(PlusPluginFormBase):
     )
 
     STYLE_CHOICES = 'SNIPPET_STYLES'
-    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SnippetPlugin(StylePluginMixin, PlusPlugin):
+class SnippetPlugin(PlusStylePlugin):
     footnote_html = """
     renders a given html snippet, can be used to include another site via iframe.
     """
@@ -129,7 +128,7 @@ class SnippetPlugin(StylePluginMixin, PlusPlugin):
 # SVG Plugin
 # ----------
 #
-class SvgImageForm(AbstractLinkForm):
+class SvgImageForm(LinkFormMixin, PlusStylePluginFormBase):
 
     picture = PlusFilerFileSearchField(
         label=_('SVG Image File'),
@@ -138,10 +137,9 @@ class SvgImageForm(AbstractLinkForm):
 
     require_link = False
     STYLE_CHOICES = 'SVG_STYLES'
-    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SvgImagePlugin(StylePluginMixin, LinkPluginMixin, PlusPlugin):
+class SvgImagePlugin(LinkPluginMixin, PlusStylePlugin):
     footnote_html = """
     renders a svg in an image tag.
     """

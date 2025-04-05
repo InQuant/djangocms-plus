@@ -4,7 +4,7 @@
 {% block after_field_sets %}
     {{ block.super }}
 
-    <h1>Plugin {% trans 'Description' %}</h1>
+    <h2 style="margin-top: 2rem">Plugin Description</h2>
     <div class="description">
       {% if original.plugin_class.footnote_html %}
         {{ original.plugin_class.footnote_html|safe }}

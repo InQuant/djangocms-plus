@@ -14,10 +14,12 @@ from django.db.models.fields.related import ManyToOneRel
 from django.forms.fields import Field
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _, gettext
+from django.utils.safestring import mark_safe
 from filer.fields.file import AdminFileWidget, FilerFileField
 from filer.fields.image import FilerImageField
 from filer.models.filemodels import File as FilerFileModel
 from filer.models.imagemodels import Image as FilerImageModel
+from djangocms_attributes_field import fields
 
 from cmsplus.widgets import KeyValueWidget
 
@@ -32,6 +34,65 @@ class BaseFieldMixIn(ABC):
     @abstractmethod
     def deserialize_field(self, value):
         pass
+
+class AttributesFormField(fields.AttributesFormField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("label", _("Attributes"))
+        kwargs.setdefault("required", False)
+        kwargs.setdefault("widget", fields.AttributesWidget)
+        self.excluded_keys = kwargs.pop("excluded_keys", [])
+        super().__init__(*args, **kwargs)
+
+
+class TitleWidget(forms.MultiWidget):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault(
+            "widgets",
+            (
+                forms.CheckboxInput(),
+                forms.TextInput(),
+            ),
+        )
+        super().__init__(*args, **kwargs)
+
+    def decompress(self, value):
+        if isinstance(value, dict):
+            return [value.get("show", False), value.get("title", "")]
+        return [False, ""]
+
+    def render(self, name, value, attrs=None, renderer=None):
+        value = self.decompress(value)
+        rendered_widgets = [
+            widget.render(f"{name}_{i}", val, attrs=attrs, renderer=renderer)
+            for i, (widget, val) in enumerate(zip(self.widgets, value))
+        ]
+        # Wrap both in a div with inline style or class for styling
+        return mark_safe(f'''
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label style="white-space: nowrap;">Show: {rendered_widgets[0]}</label>
+                <label style="flex-grow: 1;">Title: {rendered_widgets[1]}</label>
+            </div>
+        ''')
+
+
+class TitleField(forms.MultiValueField):
+    def __init__(self, **kwargs):
+        fields = (
+            forms.BooleanField(required=False),
+            forms.CharField(required=False),
+        )
+        super().__init__(fields=fields, require_all_fields=False, widget=TitleWidget, **kwargs)
+
+
+    def clean(self, value):
+        if value[0] and not value[1]:
+            raise ValidationError(_("Please add a title if you want to publish it."), code="incomplete")
+        return super().clean(value)
+
+    def compress(self, data_list):
+        if data_list is None:
+            return {'show': False, 'title': ''}
+        return dict(show=data_list[0], title=data_list[1])
 
 
 class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixIn):

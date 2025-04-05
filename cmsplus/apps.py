@@ -47,29 +47,18 @@ def get_toolbar_plugin_struct(plugins, slot=None, page=None):
     return sorted(main_list, key=operator.itemgetter("module"))
 
 
-def patch_frontend_plugins():
+def unregister_plugins():
     from cms.plugin_pool import plugin_pool
-    from djangocms_frontend.cms_plugins import CMSUIPlugin
-    logger.info('** monkey patching djangocms_frontend CMSUIPlugins')
-    for p in plugin_pool.registered_plugins:
-        if issubclass(p, CMSUIPlugin):
-            logger.info(f'* {p.__name__}')
-            #p.child_classes = None
-            #p.parent_classes = None
-            if p.__name__ in ['GridContainerPlugin', 'GridRowPlugin', 'GridColumnPlugin', 'ImagePlugin', 'NavContainerPlugin']:
-            #if p.__name__ in ['GridContainerPlugin', 'ImagePlugin', 'NavContainerPlugin']:
-            #if p.__name__ in ['ImagePlugin', 'NavContainerPlugin']:
-                # NavContainerPlugin is deprecated, Container, Row, Col + Image are replaced by a customized
-                # version here
-                plugin_pool.unregister_plugin(p)
-            # somehow neccessary if we unregister some plugins
-            plugin_pool._clear_cached()
+    from djangocms_link.cms_plugins import LinkPlugin
+    logger.info('** unregister djangocms_link.LinkPlugin')
+    plugin_pool.unregister_plugin(LinkPlugin)
 
 def register_plus_plugins():
     logger.info('** register plus plugins')
     from importlib import import_module
     from cms.plugin_pool import plugin_pool
     from cmsplus.app_settings import cmsplus_settings as cps
+
     # register all plugins configured cmsplus app_settings
     for plugin in cps.PLUGINS:
         mod_name, cls_name = plugin.rsplit('.', 1)
@@ -84,11 +73,11 @@ class DjangoCmsPlusConfig(AppConfig):
     def ready(self):
         super().ready()
 
-        patch_frontend_plugins()
+        unregister_plugins()
         register_plus_plugins()
 
         # monkey patch 'cms.utils.placeholder.get_toolbar_plugin_struct'
         import cms.utils.placeholder
 
-        cms.utils.placeholder.get_toolbar_plugin_struct = get_toolbar_plugin_struct
+        #cms.utils.placeholder.get_toolbar_plugin_struct = get_toolbar_plugin_struct
         logger.info('** Monkey Patched: "cms.utils.placeholder.get_toolbar_plugin_struct"')
