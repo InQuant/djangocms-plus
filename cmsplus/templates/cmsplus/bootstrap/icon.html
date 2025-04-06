@@ -1,5 +1,6 @@
+{% load cmsplus %}
 {% spaceless %}
-{% if instance.link %}<a href="{{ instance.link }}"
+{% if instance.link %}<a href="{{ instance.link }}" {% get_attributes instance.link_attributes %}
 {% if instance.download_name %} download="{{ instance.download_name }}"{% endif %}
 {% if instance.link_target %}target="{{ instance.link_target }}"{% endif %}>{% endif %}
 <{{ instance.tag_type }} {{ instance.get_attributes }}>&nbsp;</{{ instance.tag_type }}>

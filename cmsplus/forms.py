@@ -168,6 +168,12 @@ class LinkFormMixin(forms.Form):
         required=False,
     )
 
+    link_attributes = AttributesFormField(
+        label=_("Link attributes"),
+        help_text=_("Attributes apply to the <b>link</b>."),
+    )
+
+
     def __init_subclass__(cls, **kwargs):
         super().__init_subclass__(**kwargs)
         cls.base_fields["link"].required = not cls.link_is_optional

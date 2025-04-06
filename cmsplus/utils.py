@@ -391,3 +391,9 @@ def first_choice(choices):
             if first is not None:
                 return first
     return None
+
+def is_first_child(instance, parent):
+    if hasattr(instance.placeholder, "add_plugin"):  # available as of CMS v4
+        return instance.position == parent.position + 1
+    else:
+        return instance.position == 0

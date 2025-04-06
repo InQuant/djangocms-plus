@@ -236,9 +236,9 @@ class LinkPluginMixin:
 
         link_fieldset = (name, {
             'classes': (css,),
-            'fields': ('link', 'target'),
+            'fields': ('link', 'target', 'link_attributes'),
         })
-        return insert_fieldset(fieldsets, link_fieldset, self.link_fieldset_index, ['link', 'target'])
+        return insert_fieldset(fieldsets, link_fieldset, self.link_fieldset_index, ['link', 'target', 'link_attributes'])
 
     def render(self, context, instance, placeholder):
         if "request" in context:
