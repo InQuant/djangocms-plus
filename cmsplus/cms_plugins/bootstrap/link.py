@@ -3,14 +3,16 @@ from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.forms import PlusStylePluginFormBase, LinkFormMixin
-from cmsplus.plugin_base import PlusStylePlugin, LinkPluginMixin
+from cmsplus.plugin_base import LinkPluginMixin
 from cmsplus.utils import first_choice, insert_fieldset
 from cmsplus.cms_plugins.bootstrap.icon import IconField, IconPluginMixin
+from cmsplus.cms_plugins.bootstrap.fields import ColorPickerWidget
+from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
 
 # Link
 # ----
 #
-class LinkForm(LinkFormMixin, PlusStylePluginFormBase):
+class LinkForm(LinkFormMixin, BootstrapFormBase):
     link_is_optional = False
 
     name = forms.CharField(
@@ -42,6 +44,7 @@ class LinkForm(LinkFormMixin, PlusStylePluginFormBase):
         choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
         initial=cps.EMPTY_CHOICE[0][0],
         required=False,
+        widget=ColorPickerWidget()
     )
 
     LINK_SIZE_CHOICES = (
@@ -82,7 +85,7 @@ class LinkForm(LinkFormMixin, PlusStylePluginFormBase):
     )
 
 
-class LinkPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
+class LinkPlugin(LinkPluginMixin, IconPluginMixin, BootstrapPluginBase):
     footnote_html = "renders a link or button with color."
     form = LinkForm
     name = _("Link / Button")
@@ -101,7 +104,7 @@ class LinkPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
 
     @classmethod
     def get_identifier(cls, instance):
-        return instance.glossary.get('name')
+        return str(instance.name) or str(instance.link)
 
     def get_fieldsets(self, request, obj=None):
         fieldsets = super().get_fieldsets(request, obj)
@@ -110,7 +113,9 @@ class LinkPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
 
         link_fieldset = (name, {
             'fields': (
+                'link',
                 'name',
+                'target',
                 'link_type',
                 ('link_color', 'link_size'),
                 ('link_stretched', 'link_outline', 'link_block'),

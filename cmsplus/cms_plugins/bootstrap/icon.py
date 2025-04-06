@@ -10,8 +10,9 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.forms import LinkFormMixin, PlusStylePluginFormBase
-from cmsplus.plugin_base import LinkPluginMixin, PlusStylePlugin
+from cmsplus.forms import LinkFormMixin
+from cmsplus.plugin_base import LinkPluginMixin
+from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
 
 
 class IconFieldWidget(forms.Widget):
@@ -154,7 +155,7 @@ class IconFormMixin(forms.Form):
     icon = IconField(required=True)
 
 
-class IconForm(LinkFormMixin, IconFormMixin, PlusStylePluginFormBase):
+class IconForm(LinkFormMixin, IconFormMixin, BootstrapFormBase):
     require_link = False
     STYLE_CHOICES = 'MOD_ICON_STYLES'
 
@@ -178,7 +179,7 @@ class IconPluginMixin:
         css = {'all': ['cmsplus/admin/icon_plugin/css/icon_plugin.css'] + get_icon_style_paths()}
         js = ['cmsplus/admin/icon_plugin/js/icon_plugin.js']
 
-class IconPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
+class IconPlugin(LinkPluginMixin, IconPluginMixin, BootstrapPluginBase):
     footnote_html = """
     Choose icon from font defined in the settings
     """
@@ -191,7 +192,7 @@ class IconPlugin(LinkPluginMixin, IconPluginMixin, PlusStylePlugin):
 
     @classmethod
     def get_identifier(cls, instance):
-        return instance.glossary.get('icon')
+        return str(instance.icon)
 
     def render(self, context, instance, placeholder):
         if instance.icon:

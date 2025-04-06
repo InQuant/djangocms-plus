@@ -7,9 +7,10 @@ class CmsPlusSettings:
     PLUGINS = (
         'cmsplus.cms_plugins.bootstrap.link.LinkPlugin',
         'cmsplus.cms_plugins.bootstrap.icon.IconPlugin',
+        'cmsplus.cms_plugins.bootstrap.grid.SpacerPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridContainerPlugin',
-        #'cmsplus.cms_plugins.bootstrap.plugins.GridRowPlugin',
-        #'cmsplus.cms_plugins.bootstrap.plugins.GridColumnPlugin',
+        'cmsplus.cms_plugins.bootstrap.grid.GridRowPlugin',
+        'cmsplus.cms_plugins.bootstrap.grid.GridColumnPlugin',
         #'cmsplus.cms_plugins.bootstrap.plugins.ImagePlugin',
         #'cmsplus.cms_plugins.bootstrap.plugins.EmbedPlugin',
         #'cmsplus.cms_plugins.generic.MultiColumnTextPlugin',
@@ -35,6 +36,8 @@ class CmsPlusSettings:
     DEVICE_MAP = {'xs': 'phone', 'sm': 'tablet small', 'md': 'tablet', 'lg': 'desktop', 'xl': 'desktop xl', 'xxl': 'desktop xxl',  }
     DEVICE_MAX_WIDTH_MAP = {'xs': 575, 'sm': 767, 'md': 991, 'lg': 1199, 'xl': 1399, 'xxl': 1899,  }
     DEVICE_MIN_WIDTH_MAP = {'xs': 0, 'sm': 576, 'md': 768, 'lg': 992, 'xl': 1200, 'xxl': 1400 }
+
+    SPACING_VALUE_LIMIT = 5
 
     COLOR_CHOICES = (
         ('primary', 'Primary'),

@@ -11,20 +11,54 @@ from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.forms import PlusPluginFormBase, PlusStylePluginFormBase
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, PlusStylePlugin
+from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
+from cmsplus.cms_plugins.bootstrap.fields import ColorPickerWidget, SpacingWidget, RowColsWidget, ColsWidget
 from cmsplus.cms_plugins.bootstrap.mixins import BackgroundImagePluginMixin, BackgroundImageFormMixin
 
 logger = logging.getLogger(__name__)
 
-class BootstrapFormBase(PlusStylePluginFormBase):
-    pass
+# Spacer
+# ------
+#
 
-class BootstrapPluginBase(PlusStylePlugin):
-    module = 'Bootstrap'
-    form = BootstrapFormBase
+SPACING_FIELD = forms.CharField(label="Spacing", required=False, widget=SpacingWidget)
+BACKGROUND_COLOR_FIELD = forms.ChoiceField(
+        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
+        label=_("Background Color"),
+        required=False,
+        initial="",
+        help_text=_('Select a background color.'),
+        widget=ColorPickerWidget()
+    )
+
+class SpacerForm(BootstrapFormBase):
+    STYLE_CHOICES = 'SPACER_STYLES'
+
+    spacing = forms.CharField(label="Spacing", required=True, widget=SpacingWidget)
 
 
-# BootstrapContainerForm
-# ----------------------
+class SpacerPlugin(BootstrapPluginBase):
+    footnote_html = """
+    Renders a spacer realize a space between plugins.
+    """
+    name = 'Spacer'
+    form = SpacerForm
+    allow_children = False
+    parent_classes = None
+    require_parent = False
+
+    @classmethod
+    def get_identifier(cls, instance):
+        return str(instance.spacing)
+
+    def render(self, context, instance, placeholder):
+        if getattr(instance, 'spacing', None):
+            instance.add_classes(getattr(instance, 'spacing'))
+        return super().render(context, instance, placeholder)
+
+
+# GridContainer
+# -------------
 #
 class GridContainerForm(BackgroundImageFormMixin, BootstrapFormBase):
     STYLE_CHOICES = 'MOD_CONTAINER_STYLES'
@@ -43,19 +77,8 @@ class GridContainerForm(BackgroundImageFormMixin, BootstrapFormBase):
                     'margin" or to "fluid content with fixed margin".')
     )
 
-    background_color = forms.ChoiceField(
-        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
-        label=_("Background Color"),
-        required=False,
-        help_text=_('Select a background color.')
-    )
-
-    bottom_margin = forms.ChoiceField(
-        label=u'Bottom Margin',
-        required=False, choices=cps.CNT_BOTTOM_MARGIN_CHOICES,
-        initial='',
-        help_text='Select the default bottom margin to be applied?')
-
+    spacing = SPACING_FIELD
+    background_color = BACKGROUND_COLOR_FIELD
 
 
 class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
@@ -77,7 +100,7 @@ class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
     require_parent = False
 
     def render(self, context, instance, placeholder):
-        for k in ['fluid', 'background_color', 'bottom_margin']:
+        for k in ['fluid', 'background_color', 'spacing']:
             if getattr(instance, k, None):
                 v = getattr(instance, k)
                 if k == 'background_color': v = 'bg-' + v
@@ -86,244 +109,78 @@ class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
 
     @classmethod
     def get_identifier(cls, instance):
-        if not instance.title:
-            cnt_info = dict(cls.form.FLUID_CHOICES)
-            ident = cnt_info.get(instance.glossary.get('fluid'))
+        cnt_info = dict(cls.form.FLUID_CHOICES)
+        ident = cnt_info.get(instance.glossary.get('fluid'))
         return str(ident)
 
-'''
-# BootstrapRowPlugin
-# ------------------
+# GridRow
+# -------
 #
-class BootstrapRowForm(PlusPluginFormBase):
-
-    bottom_margin = forms.ChoiceField(
-        label=u'Bottom Margin',
-        required=False, choices=cps.ROW_BOTTOM_MARGIN_CHOICES,
-        initial=cps.ROW_BOTTOM_MARGIN_CHOICES[0][0],
-        help_text='Select the default bottom margin to be applied?')
-
+class GridRowForm(BootstrapFormBase):
     STYLE_CHOICES = 'MOD_ROW_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
 
+    row_columns = forms.CharField(label="Row Columns", required=False, widget=RowColsWidget)
+    spacing = SPACING_FIELD
 
-class BootstrapRowPlugin(BootstrapPluginBase):
+class GridRowPlugin(BootstrapPluginBase):
     footnote_html = """
     Renders a bootstrap (grid) row.
     """
     name = 'Row'
-    form = BootstrapRowForm
+    form = GridRowForm
 
-    parent_classes = None
-    require_parent = False
+    child_classes = ["GridColumnPlugin", "CardPlugin"]
     allow_children = True
 
-    render_template = 'cmsplus/bootstrap/row.html'
+    def render(self, context, instance, placeholder):
+        instance.add_classes('row')
+        for k in ['row_columns', 'spacing']:
+            if getattr(instance, k, None):
+                v = getattr(instance, k)
+                instance.add_classes(v)
+        return super().render(context, instance, placeholder)
 
-    tag_type = 'div'
-    default_css_class = 'row'
-    css_class_fields = StylePluginMixin.css_class_fields + ['bottom_margin', ]
+    @classmethod
+    def get_identifier(cls, instance):
+        return str(instance.row_columns) or str(instance.spacing)
 
 
-# BootstrapColForm
-# ----------------
+# GridColumn
+# ----------
 #
-class ColDefHelper:
-
-    def __init__(self, col_range=13, col_base=''):
-        self.col_range = col_range
-        self.col_base = col_base
-
-    @staticmethod
-    def get_dev_token(dev):
-        """
-        Returns proper device token e.g.:  -xs or -md.
-        """
-        return '-%s' % dev if dev != 'xs' else ''
-
-    def get_col_choices(self, tok, attr, col_base=''):
-        """ Returns choice tuples for given attr, e.g. col
-        e.g. ('col-md-6', 'col 6').
-        """
-        return [('col%s%s-%ld' % (col_base, tok, n), '%s %d' % (attr, n)) for n in range(1, self.col_range)]
-
-    def get_attr_choices(self, tok, attr):
-        return [('%s%s-%ld' % (attr, tok, n), '%s %d' % (attr, n)) for n in range(1, self.col_range)]
-
-    def col_width_choices(self, dev):
-        """
-        Return tuples of ('col-md-1', 'col 1')
-        """
-        tok = self.get_dev_token(dev)
-
-        if dev == 'xs':
-            choices = [('', 'flex'), ]
-        else:
-            choices = [('', 'inherit'), ('col%s%s' % (self.col_base, tok), 'flex')]
-
-        choices.extend(self.get_col_choices(tok, 'col', col_base=self.col_base))
-        choices.append(('col%s%s-auto' % (self.col_base, tok), 'auto'))
-        return choices
-
-    def col_offset_choices(self, dev):
-        """
-        Return tuples of ('offset-md-1', 'offset 1').
-        """
-        tok = self.get_dev_token(dev)
-        if dev == 'xs':
-            choices = [('', 'none'), ]
-        else:
-            choices = [('', 'inherit'), ]
-        choices.extend(self.get_attr_choices(tok, 'offset'))
-        return choices
-
-    def col_order_choices(self, dev):
-        """
-        Return tuples of ('order-md-1', 'order 1')
-        """
-        tok = self.get_dev_token(dev)
-        if dev == 'xs':
-            choices = [('', 'none'), ]
-        else:
-            choices = [('', 'inherit'), ]
-        choices.append(('order%s-first' % tok, 'first'))
-        choices.extend(self.get_attr_choices(tok, 'order'))
-        choices.append(('order%s-last' % tok, 'last'))
-        return choices
-
-    def col_display_choices(self, dev):
-        """
-        Return tuples of ('d-*-block', 'd-block').
-        """
-        display_values = ['block', 'flex', 'inline', 'inline-block', 'none', 'table', 'table-cell']
-        tok = self.get_dev_token(dev)
-        if dev == 'xs':
-            choices = [('', 'not set'), ]
-        else:
-            choices = [('', 'inherit'), ]
-
-        for v in display_values:
-            choices.append(('d%s-%s' % (tok, v), '%s' % v),)
-        return choices
-
-    def get_column_form_fields(self, attrs=None, initials=None, choices=None):
-        attrs = [] if not attrs else attrs
-        initials = {} if not initials else initials
-        choices = {} if not choices else choices
-
-        _attrs = attrs or ['offset', 'width', 'order', 'display']
-
-        for attr in _attrs:
-            for dev in cps.DEVICES:
-                choice_method = getattr(self, 'col_%s_choices' % attr)
-                attr_choices = choices.get(attr, {}).get(dev, choice_method(dev))
-
-                # e.g. label = 'left phone'
-                label = '%s %s' % (cps.DEVICE_MAP[dev], attr)
-
-                if attr == 'width' and dev == 'xs':
-                    field = forms.ChoiceField(
-                        label=label, required=False,
-                        choices=attr_choices,
-                        initial=initials.get(attr, {}).get(dev, 'col'))
-                else:
-                    field = forms.ChoiceField(
-                        label=label, required=False,
-                        choices=attr_choices,
-                        initial=initials.get(attr, {}).get(dev, ''))
-
-                field_name = 'col_%s_%s' % (attr, dev)
-                yield field_name, field
-
-
-class BootstrapColumnForm(PlusPluginFormBase):
-
-    bottom_margin = forms.ChoiceField(
-        label=u'Bottom Margin',
-        required=False, choices=cps.COL_BOTTOM_MARGIN_CHOICES,
-        initial=cps.COL_BOTTOM_MARGIN_CHOICES[0][0],
-        help_text='Select the default bottom margin to be applied')
+class GridColumnForm(BackgroundImageFormMixin, BootstrapFormBase):
 
     STYLE_CHOICES = 'MOD_COL_STYLES'
-    extra_style, extra_classes, label, extra_css = get_style_form_fields(STYLE_CHOICES)
 
-    # offset and width fields are dynamically added with _extend_form_fields
-    # method below
-
-    @staticmethod
-    def get_column_keys(for_attrs=None):
-        keys = []
-        attrs = for_attrs or ['offset', 'width', 'order', 'display']
-        for attr in attrs:
-            for dev in cps.DEVICES:
-                keys.append('col_%s_%s' % (attr, dev))
-        return keys
-
-    # noinspection GrazieInspection
-    @classmethod
-    def extend_form_fields(cls, col_helper):
-        """ Because column size form fields have to be added dynamically
-        to reflect the devices: xs - xl, xxl, ... configured in app_settings
-        we get the form ready here. This method is called from
-        module level below.
-        """
-        # add column size fields col_offset_xs ..., col_width_xs ...,
-        # col_order_xs.., col_display_xs .. col_display_xl
-        for field_name, field in col_helper.get_column_form_fields():
-            cls.declared_fields[field_name] = field
+    columns = forms.CharField(label="Columns", required=False, widget=ColsWidget)
+    spacing = SPACING_FIELD
+    background_color = BACKGROUND_COLOR_FIELD
 
 
-BootstrapColumnForm.extend_form_fields(ColDefHelper(col_range=13, col_base=''))  # default 12 divided form
-
-MCF_COLUMN_KEYS = BootstrapColumnForm.get_column_keys
-
-
-class BootstrapColPlugin(BootstrapPluginBase):
+class GridColumnPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
     footnote_html = """
-    Renders a bootstrap column with variable offset and with.
+    Renders a bootstrap column with various column classes and spacing.
     """
     name = 'Column'
-    form = BootstrapColumnForm
+    form = GridColumnForm
+    parent_classes = ['GridRowPlugin',]
+    require_parent = True
     allow_children = True
-    parent_classes = None
-    require_parent = False
-    render_template = 'cmsplus/bootstrap/column.html'
 
-    tag_type = 'div'
-    default_css_class = 'col'
-    css_class_fields = StylePluginMixin.css_class_fields + MCF_COLUMN_KEYS(
-    ) + ['bottom_margin']
+    def render(self, context, instance, placeholder):
+        instance.add_classes('col')
+        for k in ['columns', 'background_color', 'spacing']:
+            if getattr(instance, k, None):
+                v = getattr(instance, k)
+                if k == 'background_color': v = 'bg-' + v
+                instance.add_classes(v)
+        return super().render(context, instance, placeholder)
 
-    fieldsets = [
-        (_('Column settings'), {
-            'fields': (
-                MCF_COLUMN_KEYS(for_attrs=['offset', ]),
-                MCF_COLUMN_KEYS(for_attrs=['width', ]),
-            )
-        }),
-        (_('Extra Column settings'), {
-            'classes': ('collapse',),
-            'fields': (
-                MCF_COLUMN_KEYS(for_attrs=['order', ]),
-                MCF_COLUMN_KEYS(for_attrs=['display', ]),
-            )
-        }),
-        (_('Module settings'), {
-            'fields': (
-                'bottom_margin',
-                'label',
-                'extra_style',
-                'extra_classes',
-            )
-        }),
-        (_('Extra CSS'), {
-            'classes': ('collapse',),
-            'fields': (
-                'extra_css',
-            )
-        }),
-    ]
+    @classmethod
+    def get_identifier(cls, instance):
+        return str(instance.columns) or str(instance.spacing) or str(instance.background_color)
 
+'''
 
 # 10 divided column form and plugin
 # ---------------------------------

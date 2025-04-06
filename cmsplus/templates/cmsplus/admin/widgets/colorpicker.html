@@ -1,0 +1,80 @@
+<div class="color-picker-widget" data-widget-id="{{ widget.id }}">
+    <div class="selected-color-display">
+      <div style="width: 30px; height: 30px"
+           class="selected-color-preview bg-{{ widget.value }} border border-dark">
+      </div>
+      <div class="selected-color-value">{{ widget.value }}{% if not widget.value %}----{% endif %}</div>
+      <button type="button"
+              class="btn btn-outline-secondary btn-sm mt-2"
+              data-bs-toggle="modal"
+              data-bs-target="#colorPickerModal-{{ widget.id }}">
+        Color
+      </button>
+    </div>
+  
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}" class="hidden-color-field" id="{{ widget.id }}">
+  
+    <div class="modal fade" id="colorPickerModal-{{ widget.id }}" tabindex="-1">
+      <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Select Color</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal">X</button>
+          </div>
+          <div class="modal-body">
+            <div class="d-flex flex-wrap gap-2 color-list">
+              {% for color in widget.colors %}
+                <button type="button"
+                        class="btn color-select-btn rounded {{ color.css_class }}"
+                        style="width: 40px; height: 40px; position: relative;"
+                        title="{{ color.label }}"
+                        data-color-value="{{ color.value }}">
+                  {% if color.is_empty %}
+                    <span class="position-absolute top-50 start-50 translate-middle fs-5 text-muted">×</span>
+                  {% endif %}
+                </button>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+  
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.querySelectorAll(".color-picker-widget").forEach(widget => {
+        const widgetId = widget.dataset.widgetId;
+        const hiddenInput = widget.querySelector(".hidden-color-field");
+        const selectedDisplay = widget.querySelector(".selected-color-display");
+        const selectedPreview = widget.querySelector(".selected-color-preview");
+        const selectedValue = widget.querySelector(".selected-color-value");
+        const modal = document.getElementById("colorPickerModal-" + widgetId);
+        const colorButtons = widget.querySelectorAll(".color-select-btn");
+    
+        // Hilfsfunktion: Entfernt alle bg-* Klassen
+        function clearBgClasses(el) {
+          el.classList.forEach(cls => {
+            if (cls.startsWith("bg-")) el.classList.remove(cls);
+          });
+        }
+    
+        colorButtons.forEach(button => {
+          button.addEventListener("click", () => {
+            const colorClass = "bg-" + button.dataset.colorValue;
+    
+            hiddenInput.value = button.dataset.colorValue;
+            selectedValue.textContent = button.dataset.colorValue || "----";
+            selectedDisplay.style.display = "block";
+    
+            clearBgClasses(selectedPreview);
+            selectedPreview.classList.add(colorClass);
+    
+            // Modal schließen
+            const modalInstance = bootstrap.Modal.getInstance(modal);
+            modalInstance.hide();
+          });
+        });
+      });
+    });
+</script>
