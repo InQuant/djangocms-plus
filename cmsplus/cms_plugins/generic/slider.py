@@ -3,16 +3,16 @@ import json
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from cmsplus.app_settings import cmsplus_settings
-from cmsplus.forms import PlusPluginFormBase, AbstractLinkForm, get_style_form_fields
-from cmsplus.models import PlusLinkedItem
-from cmsplus.plugin_base import StylePluginMixin, LinkPluginMixin, PlusPlugin
+from cmsplus.app_settings import cmsplus_settings as cps
+from cmsplus.forms import PlusStylePluginFormBase, LinkFormMixin
+from cmsplus.plugin_base import PlusStylePlugin, LinkPluginMixin
+from cmsplus.utils import insert_fieldset
 
 
 def get_visible_slides_fields():
     n_choices = [(n, '%d slides' % n) for n in range(1, 16)]
     fields = []
-    for dev in reversed(cmsplus_settings.DEVICES):
+    for dev in reversed(cps.DEVICES):
         if dev == 'xxl':
             initial = '3'
             required = True
@@ -28,7 +28,8 @@ def get_visible_slides_fields():
     return fields
 
 
-class SliderForm(PlusPluginFormBase):
+class SliderForm(PlusStylePluginFormBase):
+    STYLE_CHOICES = 'SLIDER_STYLES'
 
     n_slides_xxl, n_slides_xl, n_slides_lg, n_slides_md, n_slides_sm, n_slides_xs = get_visible_slides_fields()
 
@@ -99,42 +100,43 @@ class SliderForm(PlusPluginFormBase):
         help_text=_('Preview width (px) of next and previous hided slides.'),
     )
 
-    STYLE_CHOICES = 'SLIDER_STYLES'
-    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
-
     def clean(self):
         super().clean()
         breakpoints = {}
-        for dev in reversed(cmsplus_settings.DEVICES):
+        for dev in reversed(cps.DEVICES):
             key = 'n_slides_%s' % dev
-            width = cmsplus_settings.DEVICE_MAX_WIDTH_MAP[dev]
+            width = cps.DEVICE_MAX_WIDTH_MAP[dev]
             if self.cleaned_data.get(key):
                 breakpoints[width] = {'perView': int(self.cleaned_data[key])}
         self.cleaned_data['breakpoints'] = breakpoints
 
 
-class SliderPlugin(StylePluginMixin, PlusPlugin):
+class SliderPlugin(PlusStylePlugin):
+    footnote_html = "Base for a slider component."
     name = "Slider"
+    form = SliderForm
     require_parent = False
     child_classes = ['SlidePlugin', ]
     allow_children = True
     alien_child_classes = False
-    form = SliderForm
     render_template = 'cmsplus/generic/slider/slider.html'
-    footnote_html = "Base for a slider component."
 
-    fieldsets = [
-        (None, {
-            'fields': (
-                ('n_slides_xxl', 'n_slides_xl', 'n_slides_lg', 'n_slides_md', 'n_slides_sm', 'n_slides_xs',),
-                ('gap', 'peek',),
-                ('type', 'autoplay'),
-                ('show_arrows', 'hoverpause',),
-                ('animation_duration', 'animation_timing_func'),
-            ),
-            'description': _('Number of visible slides for the different device sizes:'),
-        }),
-    ]
+    slider_fieldset = (None, {
+        'fields': (
+            ('n_slides_xxl', 'n_slides_xl', 'n_slides_lg', 'n_slides_md', 'n_slides_sm', 'n_slides_xs',),
+            ('gap', 'peek',),
+            ('type', 'autoplay'),
+            ('show_arrows', 'hoverpause',),
+            ('animation_duration', 'animation_timing_func'),
+        ),
+        'description': _('Number of visible slides for the different device sizes:'),
+    })
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        keys_to_remove = self.form.base_fields.keys()
+        return insert_fieldset(fieldsets, self.slider_fieldset, 0, keys_to_remove)
+
 
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)
@@ -145,48 +147,34 @@ class SliderPlugin(StylePluginMixin, PlusPlugin):
     @classmethod
     def sanitize_model(cls, obj):
         breakpoints = {}
-        for dev in reversed(cmsplus_settings.DEVICES):
+        for dev in reversed(cps.DEVICES):
             key = 'n_slides_%s' % dev
-            width = cmsplus_settings.DEVICE_MAX_WIDTH_MAP[dev]
+            width = cps.DEVICE_MAX_WIDTH_MAP[dev]
             if obj.glossary.get(key):
                 breakpoints[width] = {'perView': int(obj.glossary[key])}
         obj.config['breakpoints'] = breakpoints
         return True
 
-class SlideForm(AbstractLinkForm):
+class SlideForm(LinkFormMixin, PlusStylePluginFormBase):
     require_link = False
 
     STYLE_CHOICES = 'SLIDE_STYLES'
-    plugin_title, extra_style, extra_css = get_style_form_fields(STYLE_CHOICES)
 
 
-class SlidePluginModel(PlusLinkedItem):
-    class Meta:
-        proxy = True
-
-
-class SlidePlugin(StylePluginMixin, LinkPluginMixin, PlusPlugin):
+class SlidePlugin(LinkPluginMixin, PlusStylePlugin):
+    footnote_html = "Renders exact one Slide in a Slider."
     name = "Slide"
+    form = SlideForm
     parent_classes = ['SliderPlugin', ]
     allow_children = True
     alien_child_classes = True
     render_template = 'cmsplus/generic/slider/slider_child.html'
-    model = SlidePluginModel
 
-    form = SlideForm
 
     class Media:
         js = [
             'admin/js/jquery.init.js',
         ]
-
-    fieldsets = [
-        (None, {
-            'fields': (
-            ),
-            'description': _('Nothing to input here:'),
-        }),
-    ]
 
     def render(self, context, instance, placeholder):
         context = super().render(context, instance, placeholder)

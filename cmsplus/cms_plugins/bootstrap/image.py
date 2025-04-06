@@ -4,7 +4,7 @@ from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import PlusFilerImageSearchField, AttributesFormField, SizeField
+from cmsplus.fields import PlusFilerImageSearchField, PlusFilerFileSearchField, SizeField
 from cmsplus.models import PlusItem
 from cmsplus.forms import LinkFormMixin
 from cmsplus.plugin_base import LinkPluginMixin
@@ -438,3 +438,31 @@ class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
             return
 
         return context
+
+
+# SVG Image
+# ---------
+#
+class SvgImageForm(LinkFormMixin, BootstrapFormBase):
+
+    picture = PlusFilerFileSearchField(
+        label=_('SVG Image File'),
+        required=True,
+    )
+
+    require_link = False
+    STYLE_CHOICES = 'SVG_STYLES'
+
+
+class SvgImagePlugin(LinkPluginMixin, BootstrapPluginBase):
+    footnote_html = """
+    renders a svg in an image tag.
+    """
+    name = 'SvgImage'
+    form = SvgImageForm
+    allow_children = False
+    render_template = 'cmsplus/generic/svg.html'
+
+    text_enabled = True  # enable in TEXT Plugin EDITOR
+    text_editor_preview = False
+    tag_attr_map = {'image_title': 'title', 'image_alt': 'alt'}
