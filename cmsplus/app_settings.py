@@ -15,11 +15,12 @@ class CmsPlusSettings:
         'cmsplus.cms_plugins.bootstrap.image.SvgImagePlugin',
         'cmsplus.cms_plugins.bootstrap.embed.VideoPlugin',
         'cmsplus.cms_plugins.generic.multicoltext.MultiColumnTextPlugin',
+        'cmsplus.cms_plugins.bootstrap.embed.BackgroundVideoPlugin',
+        'cmsplus.cms_plugins.bootstrap.embed.AudioEmbedPlugin',
+
         'cmsplus.cms_plugins.generic.snippet.SnippetPlugin',
         'cmsplus.cms_plugins.generic.slider.SlidePlugin',
         'cmsplus.cms_plugins.generic.slider.SliderPlugin',
-        #'cmsplus.cms_plugins.generic.BackgroundVideoPlugin',
-        #'cmsplus.cms_plugins.generic.AudioEmbedPlugin',
     )
 
     EMPTY_CHOICE = (("", "-----"),)

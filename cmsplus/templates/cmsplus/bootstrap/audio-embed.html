@@ -1,4 +1,4 @@
-<figure>
+<figure {{ instance.get_attributes }}>
   {% if instance.glossary.figcaption %}
     <figcaption>{{ instance.glossary.figcaption }}</figcaption>
   {% endif %}
@@ -12,3 +12,7 @@
   </audio>
 </figure>
 {{ instance.glossary.figcaption }}
+
+{% if instance.glossary.extra_css %}
+  {% include "cmsplus/includes/_extra_css.html" %}
+{% endif %}

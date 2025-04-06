@@ -3,7 +3,8 @@ from django import forms
 from django.forms import widgets
 from django.utils.translation import gettext_lazy as _
 
-from cmsplus.fields import AttributesFormField
+from cmsplus.app_settings import cmsplus_settings as cps
+from cmsplus.fields import AttributesFormField, PlusFilerFileSearchField
 from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
 
 # Embed Plugin
@@ -96,3 +97,85 @@ class VideoPlugin(BootstrapPluginBase):
             'allowfullscreen': 'allowfullscreen' if instance.glossary.get('allow_fullscreen') else '',
         })
         return context
+
+
+# Background Video
+# ----------------
+#
+class BackgroundVideoForm(BootstrapFormBase):
+
+    video_file = PlusFilerFileSearchField(
+        label='Video file',
+        help_text=_("An internal link onto an video file"),
+    )
+
+    image_filter = forms.ChoiceField(
+        label='Image Filter', required=False,
+        choices=cps.BGIMG_FILTER_CHOICES, initial='',
+        help_text='The color filter to be applied over the unhovered video.')
+
+    STYLE_CHOICES = 'BACKGROUND_VIDEO_STYLES'
+
+
+class BackgroundVideoPlugin(BootstrapPluginBase):
+    name = "Background Video"
+    allow_children = True
+    admin_preview = False
+    form = BackgroundVideoForm
+    render_template = 'cmsplus/bootstrap/background-video.html'
+
+    def render(self, context, instance, placeholder):
+        context = super().render(context, instance, placeholder)
+        instance.add_classes('position-relative overflow-hidden')
+        video = instance.glossary.get('video_file', None)
+        if video:
+            context['video_url'] = video.url
+        return context
+
+
+# Background Video
+# ----------------
+#
+class AudioEmbedForm(BootstrapFormBase):
+    src = forms.CharField(
+        label=_("Audio URL"),
+        widget=widgets.Input(),
+        help_text=_(
+            'Audio URL to an external audio file e.g.: '
+            'https://www.example.com/sample.mp3'),
+    )
+
+    figcaption = forms.CharField(
+        label=_('Figcaption for Audio'),
+        required=False,
+    )
+
+    controls = forms.BooleanField(
+        label=_("Display Controls"),
+        required=False,
+        initial=True,
+    )
+
+    muted = forms.BooleanField(
+        label=_("Start muted"),
+        required=False,
+    )
+
+    autoplay = forms.BooleanField(
+        label=_("Autoplay"),
+        required=False,
+        help_text=_('Will be blocked by browser by default.')
+    )
+
+    loop = forms.BooleanField(
+        label=_("Enable Looping"),
+        required=False,
+        help_text=_('Inifinte loop playing.'),
+    )
+
+
+class AudioEmbedPlugin(BootstrapPluginBase):
+    footnote_html = 'Renders HTML Audioplayer from a playable file url.'
+    name = 'Embed Audio'
+    form = AudioEmbedForm
+    render_template = 'cmsplus/bootstrap/audio-embed.html'

@@ -1,7 +1,7 @@
 {% load cms_tags static %}
 
 {% with i=instance ifilter=instance.glossary.image_filter %}
-<div id="div-{{ i.id }}" class="{{ instance.css_classes }} position-relative overflow-hidden">
+<div id="div-{{ i.id }}" {{ instance.get_attributes }}>
   
   <video id="video-{{ i.id }}" autoplay loop muted class="c-bg-video">
     <source src="{{ video_url }}" type="video/mp4">
@@ -18,3 +18,7 @@
 
 </div>
 {% endwith %}
+
+{% if instance.glossary.extra_css %}
+  {% include "cmsplus/includes/_extra_css.html" %}
+{% endif %}
