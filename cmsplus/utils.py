@@ -15,8 +15,18 @@ from django.db.models.query import QuerySet
 from django.utils import timezone
 from django.utils.encoding import force_str
 from django.utils.functional import Promise
+from django.utils.safestring import mark_safe
+from django.utils.functional import lazy
+
+from cmsplus.app_settings import cmsplus_settings as cps
 
 logger = logging.getLogger('cmsplus.utils')
+
+
+# use mark_safe_lazy to delay the translation when using mark_safe
+# otherwise they will not be added to /locale/
+# https://docs.djangoproject.com/en/1.11/topics/i18n/translation/#other-uses-of-lazy-in-delayed-translations
+mark_safe_lazy = lazy(mark_safe, str)
 
 
 def plus_add_plugin(placeholder, plugin_data, target=None):
@@ -397,3 +407,11 @@ def is_first_child(instance, parent):
         return instance.position == parent.position + 1
     else:
         return instance.position == 0
+
+def link_to_bootstrap_doc(rel_link):
+    link = f'{cps.BOOTSTRAP_DOC_URL}/{rel_link}'
+    if link:
+        return mark_safe_lazy(
+            f'Read more in the bootstrap <a href="{link}" target="_blank">documentation</a>.'
+        )
+    return None

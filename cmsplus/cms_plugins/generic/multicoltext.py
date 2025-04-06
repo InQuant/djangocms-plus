@@ -66,6 +66,5 @@ class MultiColumnTextPlugin(PlusStylePlugin):
 
         for dev in cps.DEVICES:
             v = getattr(instance, f'col_{dev}')
-            print('***', dev, v)
             if v: instance.add_classes(f'c-text-col-{v}')
         return context

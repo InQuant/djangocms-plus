@@ -40,9 +40,8 @@ class ColorPickerWidget(forms.Widget):
         return mark_safe(render_to_string(self.template_name, context))
 
 
-BOOTSTRAP_BASE_URL = 'https://getbootstrap.com/docs/5.3'
 class BootstrapClassHelperWidgetBase(forms.TextInput):
-    help_url = f'{BOOTSTRAP_BASE_URL}/'
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/'
     help_url_display = 'Bootstrap Utilities'
     help_text = 'helping info'
 
@@ -65,18 +64,18 @@ class BootstrapClassHelperWidgetBase(forms.TextInput):
         return mark_safe(f"{field_html}\n{help_html}")
 
 class SpacingWidget(BootstrapClassHelperWidgetBase):
-    help_url = f'{BOOTSTRAP_BASE_URL}/utilities/spacing/'
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/utilities/spacing/'
     help_url_display = 'Bootstrap Spacing Utilities'
 
     spacer_range = f'[0 - {cps.SPACING_VALUE_LIMIT}]'
     help_text = f'Spacing classes, e.g. `px-3 px-lg-5`- possible values: {spacer_range}'
 
 class RowColsWidget(BootstrapClassHelperWidgetBase):
-    help_url = f'{BOOTSTRAP_BASE_URL}/layout/grid/#row-columns'
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/layout/grid/#row-columns'
     help_url_display = 'Bootstrap Row columns'
     help_text = f'Row column classes, e.g. `row-cols-2 row-cols-lg-4`'
 
 class ColsWidget(BootstrapClassHelperWidgetBase):
-    help_url = f'{BOOTSTRAP_BASE_URL}/layout/columns/'
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/layout/columns/'
     help_url_display = 'Bootstrap Columns'
     help_text = f'Column classes, e.g. `col-6 col-lg-3`'

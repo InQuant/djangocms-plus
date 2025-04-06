@@ -1,5 +1,6 @@
 {% load cms_tags static sekizai_tags %}
-<div id="cmsplus-accordion-{{ instance.id }}" class="cmsplus-accordion {{ instance.glossary.extra_classes }}"
+
+<div id="cmsplus-accordion-{{ instance.id }}" {{ instance.get_attributes }}
      data-close-others="{{ close_others|yesno:"true,false,null" }}"
      data-first-open="{{ first_is_open|yesno:"true,false,null" }}">
   {% for child in instance.child_plugin_instances %}

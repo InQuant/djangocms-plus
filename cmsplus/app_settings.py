@@ -1,22 +1,32 @@
 from django.conf import settings
 
-from cmsplus.utils import JSONEncoder
-
 class CmsPlusSettings:
 
     PLUGINS = (
         'cmsplus.cms_plugins.bootstrap.link.LinkPlugin',
         'cmsplus.cms_plugins.bootstrap.icon.IconPlugin',
+
         'cmsplus.cms_plugins.bootstrap.grid.SpacerPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridContainerPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridRowPlugin',
         'cmsplus.cms_plugins.bootstrap.grid.GridColumnPlugin',
+
         'cmsplus.cms_plugins.bootstrap.image.ImagePlugin',
         'cmsplus.cms_plugins.bootstrap.image.SvgImagePlugin',
-        'cmsplus.cms_plugins.bootstrap.embed.VideoPlugin',
+        'cmsplus.cms_plugins.bootstrap.image.FigurePlugin',
+
         'cmsplus.cms_plugins.generic.multicoltext.MultiColumnTextPlugin',
+
+        'cmsplus.cms_plugins.bootstrap.embed.VideoPlugin',
         'cmsplus.cms_plugins.bootstrap.embed.BackgroundVideoPlugin',
         'cmsplus.cms_plugins.bootstrap.embed.AudioEmbedPlugin',
+
+        'cmsplus.cms_plugins.bootstrap.accordion.AccordionPlugin',
+        'cmsplus.cms_plugins.bootstrap.accordion.AccordionGroupPlugin',
+
+        'cmsplus.cms_plugins.bootstrap.card.CardLayoutPlugin',
+        'cmsplus.cms_plugins.bootstrap.card.CardPlugin',
+        'cmsplus.cms_plugins.bootstrap.card.CardInnerPlugin',
 
         'cmsplus.cms_plugins.generic.snippet.SnippetPlugin',
         'cmsplus.cms_plugins.generic.slider.SlidePlugin',
@@ -25,7 +35,7 @@ class CmsPlusSettings:
 
     EMPTY_CHOICE = (("", "-----"),)
 
-    JSON_ENCODER_CLASS = JSONEncoder
+    #JSON_ENCODER_CLASS = JSONEncoder
 
     MAP_LAYER_CHOICES = (
         ('', 'None'),
@@ -82,6 +92,7 @@ class CmsPlusSettings:
         'css': 'cmsplus/icons/fontawesome/css/all.css',
     }
 
+    BOOTSTRAP_DOC_URL = 'https://getbootstrap.com/docs/5.3'
     BOOTSTRAP_CSS = 'frontend/node_modules/bootstrap/dist/css/bootstrap.min.css'
     BOOTSTRAP_JS = 'frontend/node_modules/bootstrap/dist/js/bootstrap.min.js'
 

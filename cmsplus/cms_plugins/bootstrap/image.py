@@ -461,8 +461,35 @@ class SvgImagePlugin(LinkPluginMixin, BootstrapPluginBase):
     name = 'SvgImage'
     form = SvgImageForm
     allow_children = False
-    render_template = 'cmsplus/generic/svg.html'
+    render_template = 'cmsplus/bootstrap/svg.html'
 
     text_enabled = True  # enable in TEXT Plugin EDITOR
     text_editor_preview = False
     tag_attr_map = {'image_title': 'title', 'image_alt': 'alt'}
+
+
+# Figure Plugin
+# -------------
+#
+class FigureForm(BootstrapFormBase):
+
+    STYLE_CHOICES = 'FIGURE_CAPTION_STYLES'
+
+    caption = forms.CharField(
+        label=_("Figure Caption"),
+        widget=forms.widgets.TextInput(attrs={'style': 'width: 100%; padding-right: 0;'}),
+    )
+
+class FigurePlugin(BootstrapPluginBase):
+    footnote_html = """
+    Renders a bootstrap figure plugin to display a figure caption.
+    """
+    name = "Figure"
+    parent_classes = None
+    allow_children = True
+    form = FigureForm
+    render_template = 'cmsplus/bootstrap/figure.html'
+
+    def render(self, context, instance, placeholder):
+        instance.add_classes("figure-caption")
+        return super().render(context, instance, placeholder)
