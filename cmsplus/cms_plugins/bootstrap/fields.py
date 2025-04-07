@@ -63,6 +63,11 @@ class BootstrapClassHelperWidgetBase(forms.TextInput):
         )
         return mark_safe(f"{field_html}\n{help_html}")
 
+class FlexWidget(BootstrapClassHelperWidgetBase):
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/utilities/flex/'
+    help_url_display = 'Bootstrap Flex Grid Utilities'
+
+    help_text = f'Flex classes, e.g. `d-flex flex-column flex-lg-row justify-content-end`'
 class SpacingWidget(BootstrapClassHelperWidgetBase):
     help_url = f'{cps.BOOTSTRAP_DOC_URL}/utilities/spacing/'
     help_url_display = 'Bootstrap Spacing Utilities'

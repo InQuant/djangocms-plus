@@ -8,7 +8,8 @@ from django.utils.translation import gettext_lazy as _
 
 from djangocms_link.helpers import get_link
 
-from cmsplus.app_settings import settings as cps
+from cmsplus.app_settings import cmsplus_settings as cps
+from cmsplus.utils import import_class_from_str
 
 class PlusItemMixin:
 
@@ -109,8 +110,7 @@ class LinkItemMixin:
 
 
 class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
-    #_json = models.JSONField(dump_kwargs={'cls': cps.JSON_ENCODER_CLASS})
-    _json = models.JSONField()
+    _json = models.JSONField(encoder=import_class_from_str(cps.JSON_ENCODER_CLASS))
     class Meta:
         verbose_name = "Plus item"
 

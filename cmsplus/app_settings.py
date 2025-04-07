@@ -35,7 +35,7 @@ class CmsPlusSettings:
 
     EMPTY_CHOICE = (("", "-----"),)
 
-    #JSON_ENCODER_CLASS = JSONEncoder
+    JSON_ENCODER_CLASS = 'cmsplus.utils.JSONEncoder'
 
     MAP_LAYER_CHOICES = (
         ('', 'None'),
@@ -104,6 +104,7 @@ class CmsPlusSettings:
     }
 
     # custom fontello font packs
+    ICONS_FONTELLO_SHOW = False
     ICONS_FONTELLO = [
         # { 'meta': '', 'css': '' }
     ]
@@ -145,13 +146,17 @@ class CmsPlusSettings:
         ('', 'Default'),
     )
 
-    def __init__(self, site_settings=None):
-        self.site_settings = site_settings
+    ICON_STYLES = (
+        ('', 'Default'),
+    )
 
-    def __getattr__(self, attr):
-        if attr in self.site_settings:
-            return self.site_settings.get(attr)
-        return super().__getattr__(attr)
+    LINK_BUTTON_STYLES = (
+        ('', 'Default'),
+    )
+
+    def __init__(self, site_settings={}):
+        for k, v in site_settings.items():
+            setattr(self, k, v)
 
 
 cmsplus_settings = CmsPlusSettings(getattr(settings, 'CMSPLUS', {}))

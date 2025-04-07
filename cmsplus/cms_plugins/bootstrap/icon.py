@@ -62,7 +62,7 @@ class IconFieldWidget(forms.Widget):
         icons = []
         path = finders.find(cps.ICONS_BOOTSTRAP['meta'])
         if not path or not os.path.exists(path):
-            raise ImproperlyConfigured('ICONS_FONTAWESOME: meta path is not existing (%s)' % path)
+            raise ImproperlyConfigured('ICONS_BOOTSTRAP: meta path is not existing (%s)' % path)
 
         with open(path, 'rb') as f:
             raw_data = f.read()
@@ -157,7 +157,7 @@ class IconFormMixin(forms.Form):
 
 class IconForm(LinkFormMixin, IconFormMixin, BootstrapFormBase):
     require_link = False
-    STYLE_CHOICES = 'MOD_ICON_STYLES'
+    STYLE_CHOICES = 'ICON_STYLES'
 
 
 def get_icon_style_paths():

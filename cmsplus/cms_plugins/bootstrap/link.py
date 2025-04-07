@@ -14,6 +14,7 @@ from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPlugi
 #
 class LinkForm(LinkFormMixin, BootstrapFormBase):
     link_is_optional = False
+    STYLE_CHOICES = 'LINK_BUTTON_STYLES'
 
     name = forms.CharField(
         label=_("Display Name"),

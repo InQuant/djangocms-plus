@@ -12,8 +12,9 @@ from cmsplus.forms import PlusPluginFormBase, PlusStylePluginFormBase
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, PlusStylePlugin
 from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
-from cmsplus.cms_plugins.bootstrap.fields import ColorPickerWidget, SpacingWidget, RowColsWidget, ColsWidget
+from cmsplus.cms_plugins.bootstrap.fields import ColorPickerWidget, SpacingWidget, FlexWidget, RowColsWidget, ColsWidget
 from cmsplus.cms_plugins.bootstrap.mixins import BackgroundImagePluginMixin, BackgroundImageFormMixin
+from cmsplus.utils import insert_fieldset
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +22,7 @@ logger = logging.getLogger(__name__)
 # ------
 #
 
+FLEX_FIELD = forms.CharField(label="Flex Grid", required=False, widget=FlexWidget)
 SPACING_FIELD = forms.CharField(label="Spacing", required=False, widget=SpacingWidget)
 BACKGROUND_COLOR_FIELD = forms.ChoiceField(
         choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
@@ -28,6 +30,14 @@ BACKGROUND_COLOR_FIELD = forms.ChoiceField(
         required=False,
         initial="",
         help_text=_('Select a background color.'),
+        widget=ColorPickerWidget()
+    )
+TEXT_COLOR_FIELD = forms.ChoiceField(
+        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
+        label=_("Text Color"),
+        required=False,
+        initial="",
+        help_text=_('Select a text color.'),
         widget=ColorPickerWidget()
     )
 
@@ -77,8 +87,10 @@ class GridContainerForm(BackgroundImageFormMixin, BootstrapFormBase):
                     'margin" or to "fluid content with fixed margin".')
     )
 
+    flex = FLEX_FIELD
     spacing = SPACING_FIELD
     background_color = BACKGROUND_COLOR_FIELD
+    text_color = TEXT_COLOR_FIELD
 
 
 class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
@@ -99,19 +111,39 @@ class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
     parent_classes = None
     require_parent = False
 
+    cnt_fieldset = (
+        None,
+        {
+            "fields": (
+                ("fluid",),
+                ("flex",),
+                ("spacing",),
+                ("background_color", "text_color"),
+            )
+        },
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        keys_to_remove = self.form.declared_fields.keys()
+        return insert_fieldset(fieldsets, self.cnt_fieldset, 0, keys_to_remove)
+
     def render(self, context, instance, placeholder):
-        for k in ['fluid', 'background_color', 'spacing']:
+        for k in ['fluid', 'flex', 'spacing', 'background_color', 'text_color']:
             if getattr(instance, k, None):
                 v = getattr(instance, k)
                 if k == 'background_color': v = 'bg-' + v
+                if k == 'text_color': v = 'text-' + v
                 instance.add_classes(v)
         return super().render(context, instance, placeholder)
 
     @classmethod
     def get_identifier(cls, instance):
-        cnt_info = dict(cls.form.FLUID_CHOICES)
-        ident = cnt_info.get(instance.glossary.get('fluid'))
-        return str(ident)
+        cnt_map = dict(cls.form.FLUID_CHOICES)
+        ident = cnt_map.get(instance.glossary.get('fluid'))
+        style_map = dict(getattr(cps, cls.form.STYLE_CHOICES, {}))
+        style = style_map.get(instance.glossary.get('extra_style'))
+        return style if style != 'None' else ident
 
 # GridRow
 # -------
@@ -153,8 +185,10 @@ class GridColumnForm(BackgroundImageFormMixin, BootstrapFormBase):
     STYLE_CHOICES = 'MOD_COL_STYLES'
 
     columns = forms.CharField(label="Columns", required=False, widget=ColsWidget)
+    flex = FLEX_FIELD
     spacing = SPACING_FIELD
     background_color = BACKGROUND_COLOR_FIELD
+    text_color = TEXT_COLOR_FIELD
 
 
 class GridColumnPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
@@ -167,12 +201,31 @@ class GridColumnPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
     require_parent = True
     allow_children = True
 
+    cnt_fieldset = (
+        None,
+        {
+            "fields": (
+                ("columns",),
+                ("flex",),
+                ("spacing",),
+                ("background_color", "text_color"),
+            )
+        },
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        keys_to_remove = self.form.declared_fields.keys()
+        return insert_fieldset(fieldsets, self.cnt_fieldset, 0, keys_to_remove)
+
+
     def render(self, context, instance, placeholder):
         instance.add_classes('col')
-        for k in ['columns', 'background_color', 'spacing']:
+        for k in ['columns', 'flex', 'spacing', 'background_color', 'text_color']:
             if getattr(instance, k, None):
                 v = getattr(instance, k)
                 if k == 'background_color': v = 'bg-' + v
+                if k == 'text_color': v = 'text-' + v
                 instance.add_classes(v)
         return super().render(context, instance, placeholder)
 

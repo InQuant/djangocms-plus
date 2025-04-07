@@ -5,7 +5,7 @@ from django.utils.translation import gettext_lazy as _
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.cms_plugins.bootstrap.base import BootstrapPluginBase, BootstrapFormBase
 from cmsplus.cms_plugins.bootstrap.fields import RowColsWidget, ColorPickerWidget
-from cmsplus.cms_plugins.bootstrap.grid import SPACING_FIELD, BACKGROUND_COLOR_FIELD
+from cmsplus.cms_plugins.bootstrap.grid import SPACING_FIELD, BACKGROUND_COLOR_FIELD, FLEX_FIELD, TEXT_COLOR_FIELD
 from cmsplus.utils import first_choice, link_to_bootstrap_doc, insert_fieldset
 
 # CardLayout
@@ -83,12 +83,6 @@ class CardForm(BootstrapFormBase):
         required=False
     )
 
-    card_text_color = forms.ChoiceField(
-        label=_("Text context"),
-        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
-        required=False,
-        widget=ColorPickerWidget
-    )
     card_full_height = forms.BooleanField(
         label=_("Full height"),
         initial=False,
@@ -96,6 +90,14 @@ class CardForm(BootstrapFormBase):
         help_text=_("If checked cards in one row will automatically extend to the full row height."),
     )
 
+    no_border = forms.BooleanField(
+        label=_("No Border"),
+        initial=False,
+        required=False,
+        help_text=_("If checked card will have no border."),
+    )
+
+    card_text_color = TEXT_COLOR_FIELD
     spacing = SPACING_FIELD
 
 class CardPlugin(BootstrapPluginBase):
@@ -111,6 +113,7 @@ class CardPlugin(BootstrapPluginBase):
         "ImagePlugin",
         "GridRowPlugin",
     ]
+    render_template = 'cmsplus/bootstrap/card.html'
 
     card_fieldset = (
         None,
@@ -120,8 +123,8 @@ class CardPlugin(BootstrapPluginBase):
                     "card_outline",
                     "card_text_color",
                     "card_alignment",
-                    "card_full_height",
                 ),
+                ('no_border', 'card_full_height',),
                 ('spacing',),
             )
         },
@@ -147,11 +150,13 @@ class CardPlugin(BootstrapPluginBase):
         if instance.parent and instance.parent.plugin_type == "CardLayoutPlugin":
             if instance.parent.get_plugin_instance()[0].card_type == "row":
                 instance.add_classes("h-100")
+        if instance.no_border:
+            instance.add_classes("border-0")
         return super().render(context, instance, placeholder)
 
     @classmethod
     def get_identifier(cls, instance):
-        return str(instance.card_text_color) or str(instance.card_outline)
+        return str(instance.card_text_color) or str(instance.card_outline) or " "
 
 
 # CardInner (header, body, footer)
@@ -182,14 +187,16 @@ class CardInnerForm(BootstrapFormBase):
         required=False,
     )
 
+    flex = FLEX_FIELD
     spacing = SPACING_FIELD
+    text_color = TEXT_COLOR_FIELD
     background_color = BACKGROUND_COLOR_FIELD
 
 class CardInnerPlugin(BootstrapPluginBase):
     footnote_html = """
     Renders a bootstrap Card structure component (header, body, footer).
     """
-    name = _("Card elm")
+    name = _("Card Item")
     form = CardInnerForm
     allow_children = True
     parent_classes = [
@@ -197,14 +204,33 @@ class CardInnerPlugin(BootstrapPluginBase):
         "GridColumnPlugin",
     ]
 
+    inner_fieldset = (
+        None,
+        {
+            "fields": (
+                (
+                    "inner_type",
+                    "text_alignment",
+                ),
+                ('flex',),
+                ('spacing',),
+                ('text_color', ('background_color'),),
+            )
+        },
+    )
+
+    def get_fieldsets(self, request, obj=None):
+        fieldsets = super().get_fieldsets(request, obj)
+        keys_to_remove = self.form.declared_fields.keys()
+        return insert_fieldset(fieldsets, self.inner_fieldset, 0, keys_to_remove)
+
     def render(self, context, instance, placeholder):
-        instance.add_classes(instance.inner_type)
-        if getattr(instance, "text_alignment", None):
-            instance.add_classes(f"text-{instance.text_alignment}")
-        if instance.spacing:
-            instance.add_classes(instance.spacing)
-        if instance.background_color:
-            instance.add_classes(f"bg-{instance.background_color}")
+        for k in ['inner_type', 'text_alignment', 'flex', 'spacing', 'text_color', 'background_color']:
+            if getattr(instance, k, None):
+                v = getattr(instance, k)
+                if k in ['text_alignment', 'text_color']: v = 'text-' + v
+                if k == 'background_color': v = 'bg-' + v
+                instance.add_classes(v)
 
         return super().render(context, instance, placeholder)
 

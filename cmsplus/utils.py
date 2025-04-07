@@ -7,6 +7,7 @@ import uuid
 from html.parser import HTMLParser
 from io import StringIO
 from typing import List
+from importlib import import_module
 
 from cms.api import create_page, create_title, add_plugin
 from cms.models import Page, Placeholder, PlaceholderReference
@@ -28,6 +29,14 @@ logger = logging.getLogger('cmsplus.utils')
 # https://docs.djangoproject.com/en/1.11/topics/i18n/translation/#other-uses-of-lazy-in-delayed-translations
 mark_safe_lazy = lazy(mark_safe, str)
 
+def import_class_from_str(class_path):
+    try:
+        module_name, class_name = class_path.rsplit('.', 1)
+        module = import_module(module_name)
+        return getattr(module, class_name)
+    except Exception as e:
+        logger.exception(str(e))
+        raise
 
 def plus_add_plugin(placeholder, plugin_data, target=None):
     _add_plugin = {
