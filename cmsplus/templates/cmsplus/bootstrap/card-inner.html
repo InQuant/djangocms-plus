@@ -1,0 +1,6 @@
+{% extends "cmsplus/container.html" %}
+
+{% block content %}
+    {% if instance.overlay_img_filter %}<div class="position-absolute top-0 start-0 w-100 h-100 {{ instance.overlay_img_filter }}"></div>{% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -11,3 +11,13 @@ $c_textcols: (1, 2, 3);
     }
   }
 }
+
+.c-gradient-black-to-top { background: linear-gradient(to top, var(--black-transparent), var(--transparent)); }
+.c-gradient-black-to-end { background: linear-gradient(to right, var(--black-transparent), var(--transparent));}
+.c-gradient-white-to-top { background: linear-gradient(to top, var(--white-transparent), var(--transparent)); }
+.c-gradient-white-to-end { background: linear-gradient(to right, var(--white-transparent), var(--transparent));}
+.c-gradient-primary-to-top { background: linear-gradient(to top, var(--primary-transparent), var(--transparent));}
+.c-gradient-secondary-to-top { background: linear-gradient(to top, var(--secondary-transparent), var(--transparent));}
+.c-gradient-success-to-top { background: linear-gradient(to top, var(--success-transparent), var(--transparent));}
+.c-gradient-light-to-top { background: linear-gradient(to top, var(--light-transparent), var(--transparent));}
+.c-gradient-dark-to-top { background: linear-gradient(to top, var(--dark-transparent), var(--transparent));}

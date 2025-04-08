@@ -85,6 +85,19 @@ class CmsPlusSettings:
         ('linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))', 'black top')
     )
 
+    IMG_FILTER_CHOICES = (
+        ('', 'None'),
+        ('c-gradient-black-to-top', 'Black To Top'),
+        ('c-gradient-black-to-end', 'Black To Right'),
+        ('c-gradient-white-to-top', 'White To Top'),
+        ('c-gradient-white-to-end', 'White To Right'),
+        ('c-gradient-primary-to-top', 'Primary To Top'),
+        ('c-gradient-secondary-to-top', 'Secondary To Top'),
+        ('c-gradient-success-to-top', 'Success To Top'),
+        ('c-gradient-light-to-top', 'Light To Top'),
+        ('c-gradient-dark-to-top', 'Dark To Top'),
+    )
+
     # show and hide icons in project
     ICONS_FONTAWESOME_SHOW = False
     ICONS_FONTAWESOME = {

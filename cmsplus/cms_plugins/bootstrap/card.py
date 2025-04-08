@@ -1,12 +1,21 @@
 from re import I
 from django import forms
+from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
+from django.utils.encoding import force_str
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.cms_plugins.bootstrap.base import BootstrapPluginBase, BootstrapFormBase
 from cmsplus.cms_plugins.bootstrap.fields import RowColsWidget, ColorPickerWidget
 from cmsplus.cms_plugins.bootstrap.grid import SPACING_FIELD, BACKGROUND_COLOR_FIELD, FLEX_FIELD, TEXT_COLOR_FIELD
 from cmsplus.utils import first_choice, link_to_bootstrap_doc, insert_fieldset
+
+NO_BORDER_FIELD = forms.BooleanField(
+        label=_("No Border"),
+        initial=False,
+        required=False,
+        help_text=_("If checked item will have no border."),
+    )
 
 # CardLayout
 # ----------
@@ -64,7 +73,7 @@ class CardForm(BootstrapFormBase):
 
     CARD_COLOR_STYLE_CHOICES = cps.COLOR_CHOICES + (("transparent", _("Transparent")),)
     card_outline = forms.ChoiceField(
-        label=_("Card outline context"),
+        label=_("Card Outline"),
         initial=cps.EMPTY_CHOICE[0][0],
         choices=cps.EMPTY_CHOICE + CARD_COLOR_STYLE_CHOICES,
         required=False,
@@ -90,13 +99,7 @@ class CardForm(BootstrapFormBase):
         help_text=_("If checked cards in one row will automatically extend to the full row height."),
     )
 
-    no_border = forms.BooleanField(
-        label=_("No Border"),
-        initial=False,
-        required=False,
-        help_text=_("If checked card will have no border."),
-    )
-
+    no_border = NO_BORDER_FIELD
     card_text_color = TEXT_COLOR_FIELD
     spacing = SPACING_FIELD
 
@@ -112,6 +115,7 @@ class CardPlugin(BootstrapPluginBase):
         "ListGroupPlugin",
         "ImagePlugin",
         "GridRowPlugin",
+        "GridContainerPlugin",
     ]
     render_template = 'cmsplus/bootstrap/card.html'
 
@@ -136,7 +140,7 @@ class CardPlugin(BootstrapPluginBase):
         return insert_fieldset(fieldsets, self.card_fieldset, 0, keys_to_remove)
 
     def render(self, context, instance, placeholder):
-        instance.add_classes("card")
+        instance.add_classes("card", "position-relative")
         if instance.config.get("card_outline", None):
             instance.add_classes(f"border-{instance.card_outline}")
         if instance.card_alignment:
@@ -187,10 +191,26 @@ class CardInnerForm(BootstrapFormBase):
         required=False,
     )
 
+    overlay_img_filter = forms.ChoiceField(
+        label=_("Image Filter"),
+        choices=cps.EMPTY_CHOICE + cps.IMG_FILTER_CHOICES,
+        required=False,
+    )
+
+    no_border = NO_BORDER_FIELD
     flex = FLEX_FIELD
     spacing = SPACING_FIELD
     text_color = TEXT_COLOR_FIELD
     background_color = BACKGROUND_COLOR_FIELD
+
+    def clean(self):
+        super().clean()
+        if self.cleaned_data.get('overlay_img_filter') and not self.cleaned_data.get('inner_type') == 'card-img-overlay':
+            raise ValidationError(
+                force_str(_("Inner type of 'Image Overlay' is required if 'Image Filter' is selected.")),
+                code="required",
+            )
+
 
 class CardInnerPlugin(BootstrapPluginBase):
     footnote_html = """
@@ -202,7 +222,9 @@ class CardInnerPlugin(BootstrapPluginBase):
     parent_classes = [
         "CardPlugin",
         "GridColumnPlugin",
+        "GridContainerPlugin",
     ]
+    render_template = 'cmsplus/bootstrap/card-inner.html' # due to overlay_img_filter
 
     inner_fieldset = (
         None,
@@ -211,6 +233,8 @@ class CardInnerPlugin(BootstrapPluginBase):
                 (
                     "inner_type",
                     "text_alignment",
+                    "overlay_img_filter",
+                    "no_border",
                 ),
                 ('flex',),
                 ('spacing',),
@@ -225,11 +249,12 @@ class CardInnerPlugin(BootstrapPluginBase):
         return insert_fieldset(fieldsets, self.inner_fieldset, 0, keys_to_remove)
 
     def render(self, context, instance, placeholder):
-        for k in ['inner_type', 'text_alignment', 'flex', 'spacing', 'text_color', 'background_color']:
+        for k in ['inner_type', 'text_alignment', 'flex', 'spacing', 'no_border', 'text_color', 'background_color']:
             if getattr(instance, k, None):
                 v = getattr(instance, k)
                 if k in ['text_alignment', 'text_color']: v = 'text-' + v
                 if k == 'background_color': v = 'bg-' + v
+                if k == 'no_border': v = 'border-0'
                 instance.add_classes(v)
 
         return super().render(context, instance, placeholder)
