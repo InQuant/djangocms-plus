@@ -84,3 +84,8 @@ class ColsWidget(BootstrapClassHelperWidgetBase):
     help_url = f'{cps.BOOTSTRAP_DOC_URL}/layout/columns/'
     help_url_display = 'Bootstrap Columns'
     help_text = f'Column classes, e.g. `col-6 col-lg-3`'
+
+class DisplayWidget(BootstrapClassHelperWidgetBase):
+    help_url = f'{cps.BOOTSTRAP_DOC_URL}/utilities/display/#how-it-works'
+    help_url_display = 'Display property'
+    help_text = f'display classes, e.g. show on only on lg-displays and greater: `d-none d-lg-block`, never show: `d-none`'

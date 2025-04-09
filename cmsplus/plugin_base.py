@@ -22,7 +22,7 @@ class PlusPlugin(CMSPluginBase):
     change_form_template = "cmsplus/admin/plugin/change_form.html"
     tag_type = 'div'
 
-    extra_settings_fields = ['plugin_title', 'attributes']
+    extra_settings_fields = ['plugin_title', 'attributes', 'display']
 
     def save_form(self, request, form, change):
         """
@@ -61,6 +61,9 @@ class PlusPlugin(CMSPluginBase):
 
         if instance.glossary.get('plugin_title') and instance.plugin_title.get('show'):
             instance.add_attribute('title', instance.plugin_title.get('title'))
+
+        if instance.glossary.get('display'):
+            instance.add_classes = instance.glossary.get('display')
 
         if instance.glossary.get('attributes'):
             for key, val in instance.glossary.get('attributes').items():

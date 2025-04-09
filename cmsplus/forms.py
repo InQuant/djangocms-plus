@@ -11,6 +11,7 @@ from djangocms_link.fields import LinkFormField
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.models import PlusItem
 from cmsplus.fields import PlusFilerImageSearchField, AttributesFormField, TitleField
+from cmsplus.cms_plugins.bootstrap.fields import DisplayWidget
 
 
 logger = logging.getLogger(__name__)
@@ -83,6 +84,8 @@ class PlusPluginFormBase(SerializeMixin, forms.ModelForm):
     attributes = AttributesFormField(
         label=_('Attributes'), required=False, initial='',
         help_text=_('Add extra html attributes, e.g: class="mx-3 mx-lg-5"'))
+
+    display = forms.CharField(label="Display", required=False, widget=DisplayWidget)
 
     class Meta:
         model = PlusItem
