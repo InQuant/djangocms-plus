@@ -8,21 +8,15 @@
   {% endfor %}
 </div>
 
-{% addtoblock 'js' %}
-  <script src="{% static 'cmsplus/js/bootstrap/accordion.js' %}"></script>
+{% addtoblock "extra_js" %}
   <script>
-      // ACCORDION MECHANICS
-      // ON PAGE LOAD
+      // accordion.js + accordion.css must be loaded before!
+
+      // ACCORDION MECHANICS ON PAGE LOAD
       window.addEventListener('load', function(){
           jsaccordion.init("#cmsplus-accordion-{{ instance.id }}");
       });
   </script>
 {% endaddtoblock 'js' %}
 
-{% addtoblock 'css' %}
-<link href="{% static 'cmsplus/css/bootstrap/accordion.css' %}" media="screen" rel="stylesheet" type="text/css" />
-{% endaddtoblock 'css' %}
-
-{% if instance.glossary.extra_css %}
-  {% include "cmsplus/includes/_extra_css.html" %}
-{% endif %}
+{% include "cmsplus/includes/_extra_css.html" %}

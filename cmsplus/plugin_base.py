@@ -2,11 +2,14 @@ import logging
 
 from cms.plugin_base import CMSPluginBase
 from django.utils.translation import gettext_lazy as _
+from django.utils.safestring import mark_safe
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.models import PlusItem
 from cmsplus.forms import PlusPluginFormBase, PlusStylePluginFormBase
 from cmsplus.utils import insert_fieldset
+
+from markdown import markdown
 
 logger = logging.getLogger('cmsplus')
 
@@ -96,6 +99,13 @@ class PlusPlugin(CMSPluginBase):
         selected extra style name.
         """
         return ""
+
+    @classmethod
+    def footnote_as_html(cls):
+        if getattr(cls, 'footnote_html', ''):
+            return mark_safe(markdown(cls.footnote_html))
+        return 'foo'
+
 
 
 def get_fieldset_index(fieldsets, fields_key_to_search:str) -> int:

@@ -1,15 +1,17 @@
 {% load sekizai_tags %}
 
-{% addtoblock 'css' %}
-<style>
-  {%for media, css in instance.extra_css %}
-    {% if media != 'default' %}
-    {{ media }} {
-      .c-extra-{{ instance.id }} { {{ css }} }
-    }
-    {% else %}
-    .c-extra-{{ instance.id }} { {{ css }} }
-    {% endif %}
-  {% endfor %}
-</style>
-{% endaddtoblock %}
+{% if instance.glossary.extra_css %}
+  {% addtoblock 'extra_css' %}
+    <style>
+      {%for media, css in instance.extra_css %}
+        {% if media != 'default' %}
+        {{ media }} {
+          .c-extra-{{ instance.id }} { {{ css }} }
+        }
+        {% else %}
+        .c-extra-{{ instance.id }} { {{ css }} }
+        {% endif %}
+      {% endfor %}
+    </style>
+  {% endaddtoblock %}
+{% endif %}

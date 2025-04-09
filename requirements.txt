@@ -1,6 +1,6 @@
 django-cms
-jsonfield
 django-filer
 easy-thumbnails
 djangocms_text_ckeditor
 django-post-office
+markdown

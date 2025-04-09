@@ -95,15 +95,13 @@ class GridContainerForm(BackgroundImageFormMixin, BootstrapFormBase):
 
 class GridContainerPlugin(BackgroundImagePluginMixin, BootstrapPluginBase):
     footnote_html = """
-    Renders a bootstrap container fix or fluid for device classes of:</p>
-     <ul>
-     <li>XS: Portrait Phones (<576px)</li>
-     <li>SM: Small Tablets  (≥576px and <768px)</li>
-     <li>MD: Tablets (≥768px and <992px)</li>
-     <li>LG: Laptops (≥992px and <1.200px)</li>
-     <li>XL: Desktops (≥1.200px and <1.600px)</li>
-     <li>XXL: Large Desktops (≥1.600px and < 1.900px)</li>
-     <ul>
+    Renders a bootstrap container fix or fluid for device classes of:
+        - XS: Portrait Phones (<576px)
+        - SM: Small Tablets  (≥576px and <768px)
+        - MD: Tablets (≥768px and <992px)
+        - LG: Laptops (≥992px and <1.200px)
+        - XL: Desktops (≥1.200px and <1.600px)
+        - XXL: Large Desktops (≥1.600px and < 1.900px)
     """
     name = 'Container'
     form = GridContainerForm

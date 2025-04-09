@@ -14,7 +14,7 @@
     <h2 style="margin-top: 2rem">Plugin Description</h2>
     <div class="description">
       {% if original.plugin_class.footnote_html %}
-        {{ original.plugin_class.footnote_html|safe }}
+        {{ original.plugin_class.footnote_as_html|safe }}
       {% else %}
         {% trans 'No description' %}
       {% endif %}

@@ -1,10 +1,5 @@
 {% load cms_tags sekizai_tags static %}
-{% addtoblock 'css' %}
-  <link rel="stylesheet" href="{% static 'cmsplus/ext/glidejs/glide.core.css' %}">
-  <link rel="stylesheet" href="{% static 'cmsplus/css/generic/slider.css' %}">
-{% endaddtoblock %}
-{% addtoblock 'js' %}
-  <script src="{% static 'cmsplus/ext/glidejs/glide.min.js' %}"></script>
+{% addtoblock "extra_js" %}
   <script>
       let glide{{ instance.id }} = new Glide('#glide-{{ instance.id }}', {
           focusAt: "center",
@@ -61,6 +56,5 @@
     </div>
   </div>
 </div>
-{% if instance.glossary.extra_css %}
-  {% include "cmsplus/includes/_extra_css.html" %}
-{% endif %}
+
+{% include "cmsplus/includes/_extra_css.html" %}
