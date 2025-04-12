@@ -17,7 +17,7 @@ from cmsplus.utils import import_class_from_str
 class PlusItemMixin:
 
     def get_short_description(self):
-        return self.title or self.plugin_class.get_identifier(self) or self._meta.verbose_name
+        return str(self.title) or str(self.plugin_class.get_identifier(self)) or self._meta.verbose_name
     
     def add_classes(self, *args):
         for arg in args:
@@ -104,7 +104,7 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
             self.config = config
 
     def __str__(self):
-        return f'{self.plugin_type}({self.pk})'
+        return self.get_short_description() if self._glossary else '{self.plugin_type}({self.pk})'
 
     def __getattr__(self, item):
         """Makes properties of plugin glossary available as plugin properties."""
