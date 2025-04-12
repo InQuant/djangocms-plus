@@ -1,7 +1,7 @@
 import logging
 from django import forms
-from django.utils.functional import cached_property
 from django.utils.translation import gettext_lazy as _
+from django.utils.functional import cached_property
 
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import PlusFilerImageSearchField, PlusFilerFileSearchField, SizeField
@@ -11,10 +11,10 @@ from cmsplus.plugin_base import LinkPluginMixin
 from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields, get_img_dev_width_field_names
 from cmsplus.utils import is_first_child, insert_fieldset
-
 from easy_thumbnails.files import get_thumbnailer
 
 logger = logging.getLogger(__name__)
+
 
 class PlusImage(PlusItem):
     """
@@ -31,7 +31,7 @@ class PlusImage(PlusItem):
 
     def get_short_description(self):
         if self.picture:
-            return self.picture.label or self.plugin_class.get_identifier(self)
+            return self.picture.label or self.plugin_class.get_identifier(self) or self._meta.verbose_name
         return _("<file is missing>")
 
     def is_gif(self):
@@ -320,6 +320,10 @@ class ImageFormMixin(forms.Form):
     def extend_form_fields(cls):
         for field_name, field in get_img_dev_width_fields():
             cls.declared_fields[field_name] = field
+
+    class Meta:
+        model = PlusImage
+        exclude = ['_json',]
 
 
 ImageFormMixin.extend_form_fields()

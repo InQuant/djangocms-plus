@@ -71,8 +71,6 @@ class DjangoCmsPlusConfig(AppConfig):
     verbose_name = _('DjangoCMS Plus')
 
     def ready(self):
-        super().ready()
-
         unregister_plugins()
         register_plus_plugins()
 
@@ -81,3 +79,6 @@ class DjangoCmsPlusConfig(AppConfig):
 
         #cms.utils.placeholder.get_toolbar_plugin_struct = get_toolbar_plugin_struct
         logger.info('** Monkey Patched: "cms.utils.placeholder.get_toolbar_plugin_struct"')
+
+        from cmsplus import plugin_tag
+        plugin_tag.setup()

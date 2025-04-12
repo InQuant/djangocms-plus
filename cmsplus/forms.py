@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 class SerializeMixin:
 
-    def deserialize_data(self):
+    def deserialize(self):
         """
         Deserialize data from Json field into dict. Opposite of serialize function (see above)
         :return: Data
@@ -44,7 +44,7 @@ class SerializeMixin:
 
         return parsed_dict
 
-    def serialize_data(self):
+    def serialize(self):
         """
         Takes form field values and calls "serialize_field" method for each field,
         if it is declared in the field class
@@ -107,7 +107,7 @@ class PlusPluginFormBase(SerializeMixin, forms.ModelForm):
         """
         Put serialized data to glossary (config) field, then save.
         """
-        self.instance.config = self.serialize_data()
+        self.instance.config = self.serialize()
         return super().save(commit)
 
 

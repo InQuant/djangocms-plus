@@ -1,47 +1,31 @@
 from uuid import uuid4
 from cms.models import CMSPlugin
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.functional import cached_property
 from django.utils.html import conditional_escape, mark_safe
 from django.utils.translation import gettext_lazy as _
+from django.utils.functional import cached_property
 
 from djangocms_link.helpers import get_link
 
 from cmsplus.app_settings import cmsplus_settings as cps
+from cmsplus.fields import SizeField
 from cmsplus.utils import import_class_from_str
 
+
 class PlusItemMixin:
-
-    def __init__(self, *args, **kwargs):
-        self._additional_classes = []
-        super().__init__(*args, **kwargs)
-
-    def __str__(self):
-        return str(self.get_short_description())
 
     def get_short_description(self):
         return self.title or self.plugin_class.get_identifier(self) or self._meta.verbose_name
     
-    def __getattr__(self, item):
-        """Makes properties of plugin glossary available as plugin properties."""
-        if item[0] != "_" and item in self.glossary:  # Avoid infinite recursion trying to get .config from db
-            return self.glossary.get(item)
-        return super().__getattribute__(item)
-
-    def save(self, *args, **kwargs):
-        if getattr(self.plugin_class, 'sanitize_model', None):
-            self.plugin_class.sanitize_model(self)
-        self._glossary = None
-        super().save(*args, **kwargs)
-
     def add_classes(self, *args):
         for arg in args:
             if arg:
                 self._additional_classes += arg.split() if isinstance(arg, str) else arg
 
     def add_attribute(self, attr, value=None):
-        attrs = self.glossary.get("attributes", {})
+        attrs = self.glossary.get("attributes", {}) or {}
         if attr == "style" and attr in attrs:
             value += attrs[attr]
         attrs.update({attr: value})
@@ -61,18 +45,6 @@ class PlusItemMixin:
         return mark_safe(" " + attributes_string) if attributes_string else ""
 
     @property
-    def glossary(self):
-        if not getattr(self, '_glossary', None):
-            self._glossary = self.plugin_class.get_glossary(self)
-        return self._glossary
-
-    @property
-    def errors(self):
-        glossary = self.plugin_class.get_glossary(self)
-        form = self.plugin_class.form(data=glossary)
-        return form.errors
-
-    @property
     def tag_type(self):
         return self.plugin_class.get_tag_type(self)
 
@@ -82,10 +54,6 @@ class PlusItemMixin:
             return self.glossary.get("plugin_title", {}).get("title", "")
         except:
             return None
-
-    @cached_property
-    def plugin_class(self):
-        return self.get_plugin_class()
 
     @property
     def extra_css(self):
@@ -114,6 +82,36 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
     class Meta:
         verbose_name = "Plus item"
 
+    def __init__(self, *args, plugin_class=None, **kwargs):
+        if plugin_class:
+            # to init with "normal" instance values we need the plugin class to get the form, as get_plugin_class recurses
+            # infinite in __init__
+            # than we can init via the form serialize_data method ..
+            form = plugin_class.form(data=kwargs)
+            if form.is_valid():
+                config = form.serialize()
+                # .. and remove the field keys from kwargs as they exist only in the form
+                for k in config.keys(): kwargs.pop(k, None)
+            else:
+                raise ValidationError(form.errors)
+
+        super().__init__(*args, **kwargs)
+
+        self._additional_classes = []
+        self._glossary = {}
+        if plugin_class:
+            self.plugin_type = plugin_class.__name__
+            self.config = config
+
+    def __str__(self):
+        return f'{self.plugin_type}({self.pk})'
+
+    def __getattr__(self, item):
+        """Makes properties of plugin glossary available as plugin properties."""
+        if item[0] != "_" and item in self.glossary:  # Avoid infinite recursion trying to get .config
+            return self.glossary.get(item)
+        return super().__getattribute__(item) # super has no __getattr__
+
     @property
     def config(self):
         """ raw glossary data """
@@ -122,3 +120,24 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
     @config.setter
     def config(self, value: dict):  # noqa E999
         self._json = value
+
+    @cached_property
+    def plugin_class(self):
+        return self.get_plugin_class()
+
+    @property
+    def glossary(self):
+        if not self._glossary:
+            self._glossary = self.plugin_class.get_glossary(self)
+        return self._glossary
+
+    @property
+    def errors(self):
+        glossary = self.plugin_class.get_glossary(self)
+        form = self.plugin_class.form(data=glossary)
+        return form.errors
+
+    def save(self, *args, **kwargs):
+        self.plugin_class.sanitize_model(self)
+        self._glossary = {}
+        super().save(*args, **kwargs)

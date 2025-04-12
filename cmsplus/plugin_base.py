@@ -34,6 +34,13 @@ class PlusPlugin(CMSPluginBase):
             setattr(obj, field, value)
         return obj
 
+    def render_change_form(self, request, context, **kwargs):
+        """put plugin class into context to use it in customized change_form.html to display
+        footnote_html in new (create) and edit (update) situations.
+        """
+        context['plugin_class'] = self.__class__
+        return super().render_change_form(request, context, **kwargs)
+
     def get_fieldsets(self, request, obj=None):
         declared_fields = list(self.form.declared_fields.keys())
 
@@ -72,7 +79,7 @@ class PlusPlugin(CMSPluginBase):
 
     @classmethod
     def get_glossary(cls, instance):
-        return cls.form(data=instance.config).deserialize_data()
+        return cls.form(data=instance.config).deserialize()
 
     @classmethod
     def get_tag_type(cls, instance):
@@ -89,9 +96,8 @@ class PlusPlugin(CMSPluginBase):
     def sanitize_model(cls, instance):
         """
         This method is called, before the model is saved to the database. It can be overloaded to sanitize the current
-        (_json) data dict of the instance.
+        (config) data dict of the instance.
         """
-        if instance.config is None: instance.config = {}
 
     @classmethod
     def get_identifier(cls, instance):
@@ -148,24 +154,18 @@ class PlusStylePlugin(PlusPlugin):
 
     def get_render_template(self, context, instance, placeholder):
         """ try to eval a template based on dirname of render_template and given
-        extra_style name, e.g.: 'phoenix/plugins/c-category-tile.html'
+        extra_style name, e.g.: 'myapp/plugins/c-category-container.html'
+
+        so  in other words:
+        extra_style here means not a css class, like c-category instead c-category is the key in
+        cps.EXTRA_STYLE_TEMPLATES which points to: 'myapp/plugins/c-category-container.html'
         """
-        if not getattr(self, 'render_template', None):
-            return super().get_render_template(context, instance, placeholder)
-
-        if not instance.glossary.get('extra_style'):
-            return self.render_template
-
-        style_template = getattr(
-            cps, 'EXTRA_STYLE_TEMPLATES', {}).get(instance.glossary.get('extra_style'))
-        if not style_template:
-            return self.render_template
-
-        return style_template
-
-    @classmethod
-    def get_glossary(cls, instance):
-        return cls.form(data=instance.config).deserialize_data()
+        template = self.render_template
+        try:
+            template = getattr(cps, 'EXTRA_STYLE_TEMPLATES', {}).get(instance.extra_style) or template
+        except:
+            pass
+        return template
 
     @classmethod
     def get_extra_css(cls, instance):
@@ -211,7 +211,7 @@ class PlusStylePlugin(PlusPlugin):
             return media, css_key
 
         css = {}
-        extra_css = instance.glossary.get('extra_css')
+        extra_css = instance.glossary.get('extra_css', {}) or {}
 
         try:
             for key, val in extra_css.items():

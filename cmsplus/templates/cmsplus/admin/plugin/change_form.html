@@ -13,8 +13,9 @@
 
     <h2 style="margin-top: 2rem">Plugin Description</h2>
     <div class="description">
-      {% if original.plugin_class.footnote_html %}
-        {{ original.plugin_class.footnote_as_html|safe }}
+      {# plugin_class is put into context with render_change_form original does work in update only #}
+      {% if plugin_class.footnote_html %}
+        {{ plugin_class.footnote_as_html|safe }}
       {% else %}
         {% trans 'No description' %}
       {% endif %}
