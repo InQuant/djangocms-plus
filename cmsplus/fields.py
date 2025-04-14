@@ -99,7 +99,8 @@ class PlusModelMultipleChoiceField(forms.ModelMultipleChoiceField, BaseFieldMixI
     def serialize_field(self, qs):
         return {
             'model': '{}.{}'.format(qs.model._meta.app_label, qs.model._meta.model_name),
-            'p_keys': list(qs.values_list("pk", flat=True))
+            'p_keys': list(qs.values_list("pk", flat=True)),
+            'names': [str(obj) for obj in qs]
         }
 
     def deserialize_field(self, value: list):
@@ -114,6 +115,7 @@ class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
         return {
             'model': '{}.{}'.format(obj._meta.app_label, obj._meta.model_name),
             'pk': getattr(obj, 'pk', None),
+            'name': str(obj), # no function - for humans only
         }
 
     def deserialize_field(self, value):
@@ -169,14 +171,47 @@ class PageSearchField(PlusModelChoiceField):
         kwargs.setdefault('queryset', queryset)
         super().__init__(*args, **kwargs)
 
+    def serialize_field(self, obj: object):
+        if not obj: return None
+        ser_val = super().serialize_field(obj)
+        try:
+            ser_val['absolute_url'] = obj.get_absolute_url()
+        except Exception:
+            pass
+        return ser_val
+
     def label_from_instance(self, obj):
         """
         Display value is the absolute url, sorted via iterator above.
         """
         return obj.get_absolute_url()
 
+class FilerSerializeMixin:
 
-class PlusFilerFileSearchField(PlusModelChoiceField):
+    def serialize_field(self, obj: object):
+        if not obj: return None
+        ser_val = super().serialize_field(obj)
+        try:
+            ser_val['sha1'] = obj.sha1
+        except:
+            pass
+        return ser_val
+
+    def deserialize_field(self, value):
+        if value is None:
+            return None
+        try:
+            return super().deserialize_field(value)
+        except:
+            pass # next try via sha1
+
+        try:
+            return self.queryset.get(sha1=value["sha1"])
+        except ObjectDoesNotExist as e:
+            raise ValidationError('Filer Field Deserialization Error: Could not find %s object with pk %s or sha1' %
+                                  (self.queryset.model.__name__, value))
+
+class PlusFilerFileSearchField(FilerSerializeMixin, PlusModelChoiceField):
 
     def __init__(
             self,
@@ -188,7 +223,7 @@ class PlusFilerFileSearchField(PlusModelChoiceField):
         super().__init__(queryset=queryset, widget=widget, *args, **kwargs)
 
 
-class PlusFilerImageSearchField(PlusModelChoiceField):
+class PlusFilerImageSearchField(FilerSerializeMixin, PlusModelChoiceField):
 
     def __init__(
             self,

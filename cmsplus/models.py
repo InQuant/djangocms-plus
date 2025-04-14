@@ -10,7 +10,6 @@ from django.utils.functional import cached_property
 from djangocms_link.helpers import get_link
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.fields import SizeField
 from cmsplus.utils import import_class_from_str
 
 

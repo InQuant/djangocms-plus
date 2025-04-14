@@ -13,13 +13,13 @@ def get_img_dev_width_fields(initials=None):
             field = forms.ChoiceField(
                 label=label,
                 choices=cps.IMG_DEV_WIDTH_CHOICES,
-                initial=initials.get('xs', '1/2'))
+                initial=initials.get('xs', '1/2') or '1/2')
         else:
             field = forms.ChoiceField(
                 label=label,
                 required=False,
                 choices=[('', 'inherit'), ] + list(cps.IMG_DEV_WIDTH_CHOICES),
-                initial=initials.get(dev, ''))
+                initial=initials.get(dev, '') or '')
 
         field_name = 'img_dev_width_%s' % dev
         fields.append((field_name, field))
