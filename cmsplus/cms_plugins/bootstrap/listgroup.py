@@ -82,6 +82,7 @@ See: <a href="{cps.BOOTSTRAP_DOC_URL}/components/list-group/">List Group Documen
     form = ListGroupItemForm
     allow_children = True
     parent_classes = ["ListGroupPlugin"]
+    render_template = 'cmsplus/bootstrap/list-group-item.html' # due to link
     tag_type = 'li'
 
     def render(self, context, instance, placeholder):

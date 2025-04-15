@@ -1,0 +1,8 @@
+{% extends "cmsplus/container.html" %}
+{% load cmsplus %}
+
+{% block content %}
+    {% if link %}<a href="{{ link }}" {% get_attributes instance.link_attributes %}{% if instance.target %} target="{{ instance.target }}"{% endif %}>{% endif %}
+    {{ block.super }}
+    {% if link %}</a>{% endif %}
+{% endblock %}
