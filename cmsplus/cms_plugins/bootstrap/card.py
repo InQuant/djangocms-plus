@@ -7,7 +7,7 @@ from django.utils.encoding import force_str
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.cms_plugins.bootstrap.base import BootstrapPluginBase, BootstrapFormBase
 from cmsplus.cms_plugins.bootstrap.fields import RowColsWidget, ColorPickerWidget
-from cmsplus.cms_plugins.bootstrap.grid import SPACING_FIELD, BACKGROUND_COLOR_FIELD, FLEX_FIELD, TEXT_COLOR_FIELD
+from cmsplus.cms_plugins.bootstrap.fields import SPACING_FIELD, BACKGROUND_COLOR_FIELD, FLEX_FIELD, TEXT_COLOR_FIELD
 from cmsplus.utils import first_choice, link_to_bootstrap_doc, insert_fieldset
 
 NO_BORDER_FIELD = forms.BooleanField(

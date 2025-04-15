@@ -5,6 +5,7 @@ from django.utils.safestring import mark_safe
 
 from cmsplus.app_settings import cmsplus_settings as cps
 
+
 class ColorPickerWidget(forms.Widget):
     template_name = "cmsplus/admin/widgets/colorpicker.html"
 
@@ -89,3 +90,27 @@ class DisplayWidget(BootstrapClassHelperWidgetBase):
     help_url = f'{cps.BOOTSTRAP_DOC_URL}/utilities/display/#how-it-works'
     help_url_display = 'Display property'
     help_text = f'display classes, e.g. show on only on lg-displays and greater: `d-none d-lg-block`, never show: `d-none`'
+
+# Field constants
+# ---------------
+FLEX_FIELD = forms.CharField(label="Flex Grid", required=False, widget=FlexWidget)
+
+SPACING_FIELD = forms.CharField(label="Spacing", required=False, widget=SpacingWidget)
+
+BACKGROUND_COLOR_FIELD = forms.ChoiceField(
+        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
+        label="Background Color",
+        required=False,
+        initial="",
+        help_text='Select a background color.',
+        widget=ColorPickerWidget()
+    )
+
+TEXT_COLOR_FIELD = forms.ChoiceField(
+        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
+        label="Text Color",
+        required=False,
+        initial="",
+        help_text='Select a text color.',
+        widget=ColorPickerWidget()
+    )

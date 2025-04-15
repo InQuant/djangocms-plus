@@ -1,10 +1,11 @@
-.cmsplus-accordion-head {
-    cursor: pointer;
-    width: 100%;
-    transition: 0.4s;
+.accordion-button .bi {
+    transition: transform 0.3s ease;
 }
-.cmsplus-accordion-body {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.2s ease-out;
+
+.accordion-button:not(.collapsed) .bi {
+    transform: rotate(180deg);
+}
+
+.accordion-button::after {
+    display: none !important;
 }

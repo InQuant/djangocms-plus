@@ -22,7 +22,7 @@ class CmsPlusSettings:
         'cmsplus.cms_plugins.bootstrap.embed.AudioEmbedPlugin',
 
         'cmsplus.cms_plugins.bootstrap.accordion.AccordionPlugin',
-        'cmsplus.cms_plugins.bootstrap.accordion.AccordionGroupPlugin',
+        'cmsplus.cms_plugins.bootstrap.accordion.AccordionItemPlugin',
 
         'cmsplus.cms_plugins.bootstrap.card.CardLayoutPlugin',
         'cmsplus.cms_plugins.bootstrap.card.CardPlugin',

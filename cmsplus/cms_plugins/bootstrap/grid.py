@@ -12,7 +12,8 @@ from cmsplus.forms import PlusPluginFormBase, PlusStylePluginFormBase
 from cmsplus.models import PlusItem
 from cmsplus.plugin_base import PlusPlugin, PlusStylePlugin
 from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPluginBase
-from cmsplus.cms_plugins.bootstrap.fields import ColorPickerWidget, SpacingWidget, FlexWidget, RowColsWidget, ColsWidget
+from cmsplus.cms_plugins.bootstrap.fields import (ColorPickerWidget, SpacingWidget, FlexWidget, RowColsWidget, ColsWidget,
+    FLEX_FIELD, SPACING_FIELD, BACKGROUND_COLOR_FIELD, TEXT_COLOR_FIELD)
 from cmsplus.cms_plugins.bootstrap.mixins import BackgroundImagePluginMixin, BackgroundImageFormMixin
 from cmsplus.utils import insert_fieldset
 
@@ -21,25 +22,6 @@ logger = logging.getLogger(__name__)
 # Spacer
 # ------
 #
-
-FLEX_FIELD = forms.CharField(label="Flex Grid", required=False, widget=FlexWidget)
-SPACING_FIELD = forms.CharField(label="Spacing", required=False, widget=SpacingWidget)
-BACKGROUND_COLOR_FIELD = forms.ChoiceField(
-        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
-        label=_("Background Color"),
-        required=False,
-        initial="",
-        help_text=_('Select a background color.'),
-        widget=ColorPickerWidget()
-    )
-TEXT_COLOR_FIELD = forms.ChoiceField(
-        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
-        label=_("Text Color"),
-        required=False,
-        initial="",
-        help_text=_('Select a text color.'),
-        widget=ColorPickerWidget()
-    )
 
 class SpacerForm(BootstrapFormBase):
     STYLE_CHOICES = 'SPACER_STYLES'

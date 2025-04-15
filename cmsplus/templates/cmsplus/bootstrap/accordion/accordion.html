@@ -1,22 +1,6 @@
-{% load cms_tags static sekizai_tags %}
-
-<div id="cmsplus-accordion-{{ instance.id }}" {{ instance.get_attributes }}
-     data-close-others="{{ close_others|yesno:"true,false,null" }}"
-     data-first-open="{{ first_is_open|yesno:"true,false,null" }}">
-  {% for child in instance.child_plugin_instances %}
-    {% render_plugin child %}
-  {% endfor %}
+{% load cms_tags %}
+<div id="{{ instance.accordion_id }}" {{ instance.get_attributes }}>
+  {% for plugin in instance.child_plugin_instances %}
+      {% with parentloop=forloop parent=instance %}{% render_plugin plugin %}{% endwith %}
+  {% empty %}{{ instance.simple_content }}{% endfor %}
 </div>
-
-{% addtoblock "extra_js" %}
-  <script>
-      // accordion.js + accordion.css must be loaded before!
-
-      // ACCORDION MECHANICS ON PAGE LOAD
-      window.addEventListener('load', function(){
-          jsaccordion.init("#cmsplus-accordion-{{ instance.id }}");
-      });
-  </script>
-{% endaddtoblock 'js' %}
-
-{% include "cmsplus/includes/_extra_css.html" %}

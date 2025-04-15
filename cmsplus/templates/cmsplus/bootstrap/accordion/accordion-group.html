@@ -1,13 +1,25 @@
 {% load cms_tags %}
-<div class="cmsplus-accordion-group">
-  <div {{ instance.get_attributes }}>{{ heading }}</div>
-  <div class="cmsplus-accordion-body">
-    {% for child in instance.child_plugin_instances %}
-      {% render_plugin child %}
-    {% endfor %}
+
+<div {{ instance.get_attributes }}>
+
+  <div class="accordion-header" id="heading-{{ instance.pk }}">
+    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+      data-bs-target="#collapse-{{ instance.pk }}" aria-expanded="false" aria-controls="collapse-{{ instance.pk }}">
+      <span>{{ heading }}</span>
+    </button>
+  </div>
+
+  <!-- body -->
+  <div id="collapse-{{ instance.pk }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ instance.pk }}"
+    data-bs-parent="#{{ instance.parent.id }}">
+    <div class="accordion-body">
+      {% for plugin in instance.child_plugin_instances %}
+          {% with parentloop=forloop parent=instance %}{% render_plugin plugin %}{% endwith %}
+      {% empty %}{{ instance.simple_content }}{% endfor %}
+    </div>
   </div>
 </div>
 
 {% if instance.glossary.extra_css %}
-  {% include "cmsplus/includes/_extra_css.html" %}
+  {% include "cmsplus/ikncludes/_extra_css.html" %}
 {% endif %}
