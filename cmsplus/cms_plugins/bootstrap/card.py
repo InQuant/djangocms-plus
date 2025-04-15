@@ -38,6 +38,7 @@ class CardLayoutForm(BootstrapFormBase):
     )
 
     row_columns = forms.CharField(label="Row Columns", required=False, widget=RowColsWidget)
+    spacing = SPACING_FIELD
 
 class CardLayoutPlugin(BootstrapPluginBase):
     """
@@ -54,8 +55,8 @@ class CardLayoutPlugin(BootstrapPluginBase):
 
     def render(self, context, instance, placeholder):
         instance.add_classes(instance.card_type)
-        if instance.row_columns:
-            instance.add_classes(instance.row_columns)
+        instance.add_classes(instance.spacing)
+        instance.add_classes(instance.row_columns)
         return super().render(context, instance, placeholder)
 
     @classmethod
