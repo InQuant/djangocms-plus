@@ -1,10 +1,7 @@
-{% load cms_tags %}
-{% if instance.parent.plugin_type == "CardLayoutPlugin" and instance.parent.get_plugin_instance.0.card_type == "row" %}<div class="col">{% endif %}
-<{{ instance.tag_type }}{{ instance.get_attributes }}>
-{% with parent=instance %}
-    {% for plugin in instance.child_plugin_instances %}
-        {% with forloop as parentloop %}{% render_plugin plugin %}{% endwith %}
-    {% endfor %}
-{% endwith %}
-</{{ instance.tag_type }}>
-{% if instance.parent.plugin_type == "CardLayoutPlugin" and instance.parent.get_plugin_instance.0.card_type == "row" %}</div>{% endif %}
+{% extends "cmsplus/container.html" %}
+
+{% block content %}
+    {% if instance.parent.plugin_type == "CardLayoutPlugin" and instance.parent.get_plugin_instance.0.card_type == "row" %}<div class="col">{% endif %}
+    {{ block.super }}
+    {% if instance.parent.plugin_type == "CardLayoutPlugin" and instance.parent.get_plugin_instance.0.card_type == "row" %}</div>{% endif %}
+{% endblock %}

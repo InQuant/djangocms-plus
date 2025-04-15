@@ -44,6 +44,7 @@ See: <a href="{cps.BOOTSTRAP_DOC_URL}/components/list-group/">List Group Documen
     form = ListGroupForm
     allow_children = True
     child_classes = ["ListGroupItemPlugin", "TextLinkPlugin"]
+    render_template = 'cmsplus/bootstrap/list-group.html' # due to GridRowPlugin as parent
     tag_type = 'ul'
 
     def render(self, context, instance, placeholder):

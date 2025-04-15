@@ -1,0 +1,7 @@
+{% extends "cmsplus/container.html" %}
+
+{% block content %}
+    {% if instance.parent.plugin_type == "GridRowPlugin" %}<div class="col">{% endif %}
+    {{ block.super }}
+    {% if instance.parent.plugin_type == "GridRowPlugin" %}</div>{% endif %}
+{% endblock %}

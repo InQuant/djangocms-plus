@@ -141,7 +141,7 @@ class GridRowPlugin(BootstrapPluginBase):
     name = 'Row'
     form = GridRowForm
 
-    child_classes = ["GridColumnPlugin", "CardPlugin"]
+    child_classes = ["GridColumnPlugin", "CardPlugin", "ListGroupPlugin"]
     allow_children = True
 
     def render(self, context, instance, placeholder):
