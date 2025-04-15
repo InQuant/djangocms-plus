@@ -8,7 +8,7 @@ from cms.utils import get_current_site
 from django import forms
 from django.contrib.admin.sites import site as admin_site
 from django.contrib.admin.widgets import AdminSplitDateTime
-from django.core.exceptions import ValidationError, ObjectDoesNotExist
+from django.core.exceptions import ValidationError, ObjectDoesNotExist, MultipleObjectsReturned
 from django.core.validators import ProhibitNullCharactersValidator, RegexValidator
 from django.db.models.fields.related import ManyToOneRel
 from django.forms.fields import Field
@@ -207,6 +207,8 @@ class FilerSerializeMixin:
 
         try:
             return self.queryset.get(sha1=value["sha1"])
+        except MultipleObjectsReturned:
+            return self.queryset.filter(sha1=value["sha1"]).first()
         except ObjectDoesNotExist as e:
             raise ValidationError('Filer Field Deserialization Error: Could not find %s object with pk %s or sha1' %
                                   (self.queryset.model.__name__, value))
