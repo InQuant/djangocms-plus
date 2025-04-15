@@ -1,7 +1,7 @@
 {% load cms_tags cmsplus %}
 
-{% if plus_item_link %}
-  <a href="{{ plus_item_link }}"
+{% if link %}
+  <a href="{{ link }}"
     {% if instance.target %} target="{{ instance.target }}"{% endif %}
     {% get_attributes instance.link_attributes %}>
 {% endif %}
@@ -12,7 +12,7 @@
 {% endfor %}
 </div>
 
-{% if plus_item_link %}</a>{% endif %}
+{% if link %}</a>{% endif %}
 
 {% if instance.glossary.extra_css %}
   {% include "cmsplus/includes/_extra_css.html" %}
