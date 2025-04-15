@@ -209,7 +209,7 @@ class FilerSerializeMixin:
             return self.queryset.get(sha1=value["sha1"])
         except MultipleObjectsReturned:
             return self.queryset.filter(sha1=value["sha1"]).first()
-        except ObjectDoesNotExist as e:
+        except (KeyError, ObjectDoesNotExist) as e:
             raise ValidationError('Filer Field Deserialization Error: Could not find %s object with pk %s or sha1' %
                                   (self.queryset.model.__name__, value))
 
