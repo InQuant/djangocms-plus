@@ -32,7 +32,7 @@ class PlusImage(PlusItem):
     def get_short_description(self):
         if self.picture:
             return self.picture.label or self.plugin_class.get_identifier(self) or self._meta.verbose_name
-        return _("<file is missing>")
+        return "--file is missing--"
 
     def is_gif(self):
         if self.picture and self.picture.extension == 'gif':
@@ -442,6 +442,9 @@ class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
             return
 
         return context
+
+    def get_identifier(self, instance):
+        return instance.picture.name if instance.picture else '--file ist missing--'
 
 
 # SVG Image

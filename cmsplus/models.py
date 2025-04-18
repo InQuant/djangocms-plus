@@ -107,9 +107,12 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
 
     def __getattr__(self, item):
         """Makes properties of plugin glossary available as plugin properties."""
-        if item[0] != "_" and item in self.glossary:  # Avoid infinite recursion trying to get .config
+        if item[0] != "_" and item in self._json:  # Avoid infinite recursion trying to get .config
             return self.glossary.get(item)
-        return super().__getattribute__(item) # super has no __getattr__
+        try:
+            return super().__getattribute__(item) # super has no __getattr__
+        except AttributeError as e:
+            raise AttributeError(f'PlusItem({self.id}): {e}')
 
     @property
     def config(self):

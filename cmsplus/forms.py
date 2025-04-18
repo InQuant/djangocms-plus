@@ -183,7 +183,7 @@ class LinkFormMixin(forms.Form):
 
     def clean(self):
         super(LinkFormMixin, self).clean()
-        if not self.link_is_optional and not self.cleaned_data['link']:
+        if not self.link_is_optional and not self.cleaned_data.get('link'):
             raise ValidationError(
                 force_str(_("Link is required.")),
                 code="required",
