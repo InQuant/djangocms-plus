@@ -86,7 +86,7 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
             # to init with "normal" instance values we need the plugin class to get the form, as get_plugin_class recurses
             # infinite in __init__
             # than we can init via the form serialize_data method ..
-            form = plugin_class.form(data=kwargs)
+            form = plugin_class.form(glossary=kwargs)
             if form.is_valid():
                 config = form.serialize()
                 # .. and remove the field keys from kwargs as they exist only in the form
@@ -103,7 +103,7 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
             self.config = config
 
     def __str__(self):
-        return self.get_short_description() if self._glossary else '{self.plugin_type}({self.pk})'
+        return self.get_short_description() if self._glossary else f'{self.plugin_type}({self.pk})'
 
     def __getattr__(self, item):
         """Makes properties of plugin glossary available as plugin properties."""
@@ -136,7 +136,8 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
     @property
     def errors(self):
         glossary = self.plugin_class.get_glossary(self)
-        form = self.plugin_class.form(data=glossary)
+        form = self.plugin_class.form(glossary=glossary)
+        form.is_valid()
         return form.errors
 
     def save(self, *args, **kwargs):

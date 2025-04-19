@@ -13,7 +13,7 @@ from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPlugi
 # ----
 #
 class LinkForm(LinkFormMixin, BootstrapFormBase):
-    link_is_optional = False
+    link_is_optional = True
     STYLE_CHOICES = 'LINK_BUTTON_STYLES'
 
     name = forms.CharField(

@@ -91,7 +91,7 @@ class PlusPluginFormBase(SerializeMixin, forms.ModelForm):
         model = PlusItem
         exclude = ['_json']
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, glossary=None, **kwargs):
         if kwargs.get('instance'):
             # set form initial values as our instance model attributes are in
             # glossary not in the instance itself
@@ -100,8 +100,27 @@ class PlusPluginFormBase(SerializeMixin, forms.ModelForm):
             for field_name, field in self.declared_fields.items():
                 initial[field_name] = kwargs.get('instance').glossary.get(field_name)
 
-            kwargs['initial'] = initial
+            kwargs.setdefault('initial', initial)
+
+        if glossary:
+            # init data from glossary
+            data = self.get_form_init_data(glossary)
+            kwargs['data'] = data
+
         super().__init__(*args, **kwargs)
+
+    def get_form_init_data(self, glossary):
+        def prepare_value(field, value):
+            if hasattr(field, 'prepare_value'):
+                return field.prepare_value(value)
+            return value
+
+        data = {}
+        for k, v in glossary.items():
+            if not k in self.declared_fields: continue
+            field = self.declared_fields[k]
+            data[k] = prepare_value(field, v)
+        return data
 
     def save(self, commit=True):
         """
@@ -177,9 +196,9 @@ class LinkFormMixin(forms.Form):
     )
 
 
-    def __init_subclass__(cls, **kwargs):
-        super().__init_subclass__(**kwargs)
-        cls.base_fields["link"].required = not cls.link_is_optional
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["link"].required = not self.link_is_optional
 
     def clean(self):
         super(LinkFormMixin, self).clean()
