@@ -19,18 +19,16 @@
           <h5 class="modal-title">Icon</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal">X</button>
         </div>
+
         <div class="modal-body">
           <input type="text" class="form-control icon-search mb-3" placeholder="Icon filtern...">
-          <div class="d-flex flex-wrap gap-2 icon-list">
-            {% for icon in widget.icons %}
-              <button class="btn btn-light icon-select-btn" type="button"
-                      data-icon-name="{{ icon.name }}"
-                      data-icon-class="{{ icon.font_class_name }}">
-                <i class="{{ icon.font_class_name }}"></i>
-              </button>
-            {% endfor %}
+          <!-- empty, will be filled by icon_plugin.js -->
+          <div class="d-flex flex-wrap gap-2 icon-list"
+               data-icons-json="{{ widget.icons_json }}"
+               data-widget-id="{{ widget.attrs.id }}">
           </div>
         </div>
+
       </div>
     </div>
   </div>
