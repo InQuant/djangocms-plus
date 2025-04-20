@@ -2,7 +2,7 @@ from django import forms
 from django.utils.translation import gettext_lazy as _
 
 from cmsplus.app_settings import cmsplus_settings as cps
-from cmsplus.forms import PlusStylePluginFormBase, LinkFormMixin
+from cmsplus.forms import LinkFormMixin
 from cmsplus.plugin_base import LinkPluginMixin
 from cmsplus.utils import first_choice, insert_fieldset
 from cmsplus.cms_plugins.bootstrap.icon import IconField, IconPluginMixin
@@ -13,7 +13,7 @@ from cmsplus.cms_plugins.bootstrap.base import BootstrapFormBase, BootstrapPlugi
 # ----
 #
 class LinkForm(LinkFormMixin, BootstrapFormBase):
-    link_is_optional = True
+    link_is_optional = False
     STYLE_CHOICES = 'LINK_BUTTON_STYLES'
 
     name = forms.CharField(

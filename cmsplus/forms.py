@@ -6,11 +6,9 @@ from django.core.exceptions import ValidationError
 from django.utils.encoding import force_str
 from django.utils.translation import gettext_lazy as _
 
-from djangocms_link.fields import LinkFormField
-
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.models import PlusItem
-from cmsplus.fields import PlusFilerImageSearchField, AttributesFormField, TitleField
+from cmsplus.fields import AttributesFormField, TitleField, LinkField
 from cmsplus.cms_plugins.bootstrap.fields import DisplayWidget
 
 
@@ -178,7 +176,7 @@ class LinkFormMixin(forms.Form):
 
     link_is_optional = True
 
-    link = LinkFormField(
+    link = LinkField(
         label=_("Link"),
         initial={},
         required=False,

@@ -1,13 +1,10 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 
-from djangocms_link.fields import LinkFormField
-
 from cmsplus.app_settings import cmsplus_settings as cps
 from cmsplus.fields import PlusFilerImageSearchField
 from cmsplus.utils import insert_fieldset
 from cmsplus.cms_plugins.bootstrap.helper import get_img_dev_width_fields
-from cmsplus.cms_plugins.bootstrap.fields import SpacingWidget
 
 
 # Background Image Mixins

@@ -3,6 +3,7 @@ import logging
 import re
 from abc import abstractmethod, ABC
 from datetime import datetime
+from webbrowser import get
 from cms.models import Page
 from cms.utils import get_current_site
 from django import forms
@@ -20,6 +21,7 @@ from filer.fields.image import FilerImageField
 from filer.models.filemodels import File as FilerFileModel
 from filer.models.imagemodels import Image as FilerImageModel
 from djangocms_attributes_field import fields
+from djangocms_link.fields import LinkWidget as LinkWidgetBase, LinkFormField
 
 from cmsplus.widgets import KeyValueWidget
 
@@ -374,3 +376,101 @@ class PlusDateTimeField(forms.DateTimeField, BaseFieldMixIn):
         if not value or value == "":
             return
         return value.isoformat()
+
+# LinkWidget
+# ----------
+class LinkWidget(LinkWidgetBase):
+    """ Form(data=data).is_valid() does not work with the ori LinkWidget
+
+    to push the correct data into the form bound filed - value_from_datadict has to be overwritten.
+    """
+
+    def value_from_datadict(self, data, files, name):
+        """
+        Possible data dicts:
+
+        1. if via post from form: query dict: <QueryDict: {
+            ...
+            'link_0': ['external_link'],
+            'link_1': ['https://www.inquant.de'],
+            'link_2': [''],
+            'link_3': [''],
+            'link_4': [''],
+            ...
+            '_save': ['Speichern']
+        }>
+
+        2. If given via __init__(data):
+        {
+            ...
+            link: {'external_link', 'https://www.inquant.de'}
+            # or:
+            link: {'internal_link', 'cms.page:1', 'anchor': '#foo'}
+            # or:
+            link: {'file_link', '67'}
+            ...
+        }
+
+        possible widget value combinations:
+
+        ['external_link', 'https://www.inquant.de', '', '', '']
+        ['internal_link', '', 'cms.page:1', '#foo', '']
+        ['file_link', '', '', '', '67']
+        """
+        raw_values = super().value_from_datadict(data, files, name)
+        if name in data and raw_values == [None, None, None, None, None]:
+            logger.warn(f'** LinkWidget.value_from_datadict(): fixing raw_values from: ({raw_values})')
+            value = data[name]
+            raw_values = value if isinstance(value, list) else self._build_widget_value_list_from_dict(value)
+            logger.warn(f'** to: {raw_values}')
+
+        return raw_values
+
+    def _build_widget_value_list_from_dict(self, dict_value: dict) -> list[str | None]:
+        """
+        transforms input combinations of:
+            link: {'external_link', 'https://www.inquant.de'}
+            # or:
+            link: {'internal_link', 'cms.page:1', 'anchor': '#foo'}
+            # or:
+            link: {'file_link', '67'}
+
+        into output combinations:
+
+            ['external_link', 'https://www.inquant.de', '', '', '']
+            # or:
+            ['internal_link', '', 'cms.page:1', '#foo', '']
+            # or:
+            ['file_link', '', '', '', '67']
+
+        """
+        _get_pos = self.data_pos.get
+
+        values = [''] * len(self.widgets)
+
+        if not dict_value or not isinstance(dict_value, dict):
+            return values
+
+        link_type = next((key for key in dict_value if key != "anchor"), None)
+        anchor = dict_value.get("anchor", "")
+
+        if not link_type:
+            return values
+
+        values[0] = link_type
+
+        # Pos of subwidgets
+        link_pos = _get_pos(link_type)
+        anchor_pos = _get_pos('anchor')
+
+        if link_pos is not None:
+            values[link_pos] = dict_value[link_type]
+
+        if link_type == "internal_link" and anchor_pos is not None:
+            values[anchor_pos] = anchor
+
+        return values
+
+
+class LinkField(LinkFormField):
+    widget = LinkWidget
