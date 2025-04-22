@@ -16,7 +16,10 @@ from cmsplus.utils import import_class_from_str
 class PlusItemMixin:
 
     def get_short_description(self):
-        return str(self.title) or str(self.plugin_class.get_identifier(self)) or self._meta.verbose_name
+        try:
+            return str(self.title) or str(self.plugin_class.get_identifier(self)) or self._meta.verbose_name
+        except:
+            return str(self)
     
     def add_classes(self, *args):
         for arg in args:
