@@ -41,7 +41,7 @@ class SpacerPlugin(BootstrapPluginBase):
 
     @classmethod
     def get_identifier(cls, instance):
-        return str(instance.spacing)
+        return str(instance.config.get('spacing'))
 
     def render(self, context, instance, placeholder):
         if getattr(instance, 'spacing', None):

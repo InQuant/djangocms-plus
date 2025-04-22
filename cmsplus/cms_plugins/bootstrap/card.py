@@ -54,9 +54,9 @@ class CardLayoutPlugin(BootstrapPluginBase):
     child_classes = [ "CardPlugin", ]
 
     def render(self, context, instance, placeholder):
-        instance.add_classes(instance.card_type)
-        instance.add_classes(instance.spacing)
-        instance.add_classes(instance.row_columns)
+        instance.add_classes(instance.config.get('card_type'))
+        instance.add_classes(instance.config.get('spacing'))
+        instance.add_classes(instance.config.get('row_columns'))
         return super().render(context, instance, placeholder)
 
     @classmethod
@@ -144,13 +144,13 @@ class CardPlugin(BootstrapPluginBase):
         instance.add_classes("card", "position-relative")
         if instance.config.get("card_outline", None):
             instance.add_classes(f"border-{instance.card_outline}")
-        if instance.card_alignment:
+        if instance.config.get('card_alignment'):
             instance.add_classes(f"text-{instance.card_alignment}")
         if instance.config.get("card_text_color", None):
             instance.add_classes(f"text-{instance.card_text_color}")
         if instance.config.get("card_full_height", None):
             instance.add_classes("h-100")
-        if instance.spacing:
+        if instance.config.get('spacing'):
             instance.add_classes(instance.spacing)
         if instance.parent and instance.parent.plugin_type == "CardLayoutPlugin":
             if instance.parent.get_plugin_instance()[0].card_type == "row":
