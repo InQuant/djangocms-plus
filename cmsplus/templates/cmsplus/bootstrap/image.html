@@ -4,15 +4,15 @@
         {% if instance.target %} target="{{ instance.target }}"{% endif %}
         {% get_attributes instance.link_attributes %}>
 {% endif %}
-<img {% if not instance.attributes.alt and instance.picture.default_alt_text %}
-    alt="{{ instance.picture.default_alt_text }}"{% endif %}
+<img {% if not instance.attributes.alt and instance.image.default_alt_text %}
+    alt="{{ instance.image.default_alt_text }}"{% endif %}
     {% if instance.width %} width="{{ instance.width|safe }}"{% endif %}
     {% if instance.height %} height="{{ instance.height|safe }}"{% endif %}
     {% if not instance.is_gif and srcset %}
 	    sizes="{{ srcset_sizes|join:', ' }}"
         srcset="
         {% for width, size in srcset.items %}
-           {% thumbnail instance.picture size crop=instance.use_crop upscale=instance.use_upscale as thumb %}
+           {% thumbnail instance.image size crop=instance.use_crop upscale=instance.use_upscale as thumb %}
            {{ thumb.url }} {{ width }}{% if not forloop.last %},{% endif %}
         {% endfor %}"
     {% endif %}

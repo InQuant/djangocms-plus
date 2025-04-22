@@ -27,15 +27,15 @@ class PlusImage(PlusItem):
         proxy = True
         verbose_name = "Plus Image"
 
-    image_field = "picture"
+    image_field = "image"
 
     def get_short_description(self):
-        if self.picture:
-            return self.picture.label or self.plugin_class.get_identifier(self) or self._meta.verbose_name
+        if self.image:
+            return self.image.label or self.plugin_class.get_identifier(self) or self._meta.verbose_name
         return "--file is missing--"
 
     def is_gif(self):
-        if self.picture and self.picture.extension == 'gif':
+        if self.image and self.image.extension == 'gif':
             return True
         return False
     
@@ -47,11 +47,11 @@ class PlusImage(PlusItem):
     def img_src(self):
         # image can be empty, for example when the image is removed from filer
         # in this case we want to return an empty string to avoid #69
-        if not self.picture:
+        if not self.image:
             return ""
         # return the original, unmodified image
         elif self.use_no_cropping or self.is_gif:
-            return self.picture.url if self.picture else ""
+            return self.image.url if self.image else ""
 
         picture_options = self.get_size(
             width=self.width or 0,
@@ -84,15 +84,15 @@ class PlusImage(PlusItem):
 
         # calculate height when not given according to the
         # golden ratio or fallback to the image size
-        picture_ratio = self.picture.width / self.picture.height if self.picture else cps.PICTURE_RATIO
+        picture_ratio = self.image.width / self.image.height if self.image else cps.PICTURE_RATIO
         if not height and width:
             height = width / picture_ratio
         elif not width and height:
             width = height * picture_ratio
-        elif not width and not height and getattr(self, "picture", None):
-            if self.picture:
-                width = self.picture.width
-                height = self.picture.height
+        elif not width and not height and getattr(self, "image", None):
+            if self.image:
+                width = self.image.width
+                height = self.image.height
             else:
                 width = 0
                 height = 0
@@ -174,7 +174,7 @@ class PlusImage(PlusItem):
 
             dev_max_w = cps.DEVICE_MAX_WIDTH_MAP.get(dev)
             ets[dev] = self._compute_thumb_size(
-                glossary.get('picture'), dev_max_w,
+                glossary.get('image'), dev_max_w,
                 dev_img_fraction, fixed_size)
 
             if dev != 'xl':
@@ -250,7 +250,7 @@ class PlusImage(PlusItem):
 
 class ImageFormMixin(forms.Form):
 
-    picture = PlusFilerImageSearchField(label=_('Image File'), required=True)
+    image = PlusFilerImageSearchField(label=_('Image File'), required=True)
 
     lazy_loading = forms.BooleanField(
         label=_("Load lazily"),
@@ -365,7 +365,7 @@ class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
             None,
             {
                 "fields": (
-                    ("picture",),
+                    ("image",),
                     (
                         "picture_fluid",
                         "lazy_loading",
@@ -437,14 +437,14 @@ class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
 
         context = super().render(context, instance, placeholder)
 
-        if not instance.picture:
+        if not instance.image:
             logger.error(_('Filer image not found for instance id: %s' % instance.id))
             return
 
         return context
 
     def get_identifier(self, instance):
-        return instance.picture.name if instance.picture else '--file ist missing--'
+        return instance.image.name if instance.image else '--file ist missing--'
 
 
 # SVG Image
@@ -452,7 +452,7 @@ class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
 #
 class SvgImageForm(LinkFormMixin, BootstrapFormBase):
 
-    picture = PlusFilerFileSearchField(
+    image = PlusFilerFileSearchField(
         label=_('SVG Image File'),
         required=True,
     )

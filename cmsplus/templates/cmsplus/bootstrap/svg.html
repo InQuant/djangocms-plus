@@ -8,8 +8,8 @@
 {% endif %}
 
 <img id="svgimg-{{ instance.id}}" {{ instance.get_attributes }}
-  {% if not instance.attributes.alt and instance.picture.default_alt_text %} alt="{{ instance.picture.default_alt_text }}"{% endif %}
-	src="{{ instance.picture.url }}"/>
+  {% if not instance.attributes.alt and instance.image.default_alt_text %} alt="{{ instance.image.default_alt_text }}"{% endif %}
+	src="{{ instance.image.url }}"/>
 
 {% if plus_item_link %}
   </a>
