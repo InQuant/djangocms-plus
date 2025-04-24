@@ -1,21 +1,35 @@
-
 # DjangoCMS Plus
 
-## Info
-IconPlugin:
-- include icon css in projects head
-- include css in CKEDITOR Settings in `settings.py`
-
+An addon for Django CMS > 4 which offers a set of generic and bootstrap 5 plugins with use of pure JS, easy to adapt.
+It was inspired from `djangocms-frontend` but with much simpler and cleaner code and handling e.g. `entangled` form mess.
 ## Features
-- Plugin Data stored as JSON, no need for migrations if plugin changes
-- Copy & Paste Plugin structures through JSON and the clipboard functionality
-- Marks Plugins red if plugin form contains errors
 
+- All plugin data stored as JSON, no need for migrations if plugin changes
+- Easy reuse of plugins in templates with `plugin` tag
+- Provides a Slider plugin which uses `glide.js`
+- Works perfectly with `djangocms-content-transfer` to transfer Page Structures between systems, e.g. between dev and productive instances.
+## Installation
 
-## TODO 
-- Clipboard: Refresh page when Clipboard import was successful
-    - modal on_close=REFRESH_PAGE is not working 
+1. `pip install git+https://github.com/InQuant/djangocms-plus.git`
+2. npm install
 
+```json
+    "dependencies": {
+        "@glidejs/glide": "^3.4",
+        "bootstrap": "^5",
+        "bootstrap-icons": "",
+        "select2": "^4.1",
+    },
+```
 
-## Known Issuesb
-- Icon Plugin is not working in CKTextEditor-Preview. Fonts need to be included in ckeditor js files, but how?
+3. add `cmsplus` to `INSTALLED_APPS`
+4. optional add CMSPLUS section to your project settings.py and adapt icon locations.
+
+```python
+    CMSPLUS = {
+        'ICONS_BOOTSTRAP': {
+            'meta': 'node_modules/bootstrap-icons/font/bootstrap-icons.json',
+            'css': 'node_modules/bootstrap-icons/font/bootstrap-icons.css',
+        }
+    }
+```

@@ -82,7 +82,15 @@ class CmsPlusSettings:
 
     BGIMG_FILTER_CHOICES = (
         ('', 'None'),
-        ('linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0))', 'black top')
+        ('linear-gradient(to top, var(--black-transparent), var(--transparent))', 'black to top'),
+        ('linear-gradient(to right, var(--black-transparent), var(--transparent))', 'black to right'),
+        ('linear-gradient(to top, var(--white-transparent), var(--transparent))', 'white to top'),
+        ('linear-gradient(to right, var(--white-transparent), var(--transparent))', 'white to right'),
+        ('linear-gradient(to top, var(--primary-transparent), var(--transparent))', 'primary to top'),
+        ('linear-gradient(to top, var(--secondary-transparent), var(--transparent))', 'secondary to top'),
+        ('linear-gradient(to top, var(--success-transparent), var(--transparent))', 'success to top'),
+        ('linear-gradient(to top, var(--light-transparent), var(--transparent))', 'light to top'),
+        ('linear-gradient(to top, var(--dark-transparent), var(--transparent))', 'dark to top'),
     )
 
     IMG_FILTER_CHOICES = (
@@ -94,6 +102,9 @@ class CmsPlusSettings:
         ('c-gradient-primary-to-top', 'Primary To Top'),
         ('c-gradient-secondary-to-top', 'Secondary To Top'),
         ('c-gradient-success-to-top', 'Success To Top'),
+        ('c-gradient-info-to-top', 'Info To Top'),
+        ('c-gradient-warning-to-top', 'Warning To Top'),
+        ('c-gradient-danger-to-top', 'Danger To Top'),
         ('c-gradient-light-to-top', 'Light To Top'),
         ('c-gradient-dark-to-top', 'Dark To Top'),
     )
@@ -122,10 +133,6 @@ class CmsPlusSettings:
         # { 'meta': '', 'css': '' }
     ]
 
-    MAGIC_WRAPPER_STYLES = (
-        ('', 'None'),
-    )
-
     MOD_CONTAINER_STYLES = (
         ('', 'None'),
     )
@@ -149,13 +156,7 @@ class CmsPlusSettings:
     CARD_STYLES = (
         ('', 'Default'),
     )
-    CARD_HEADER_STYLES = (
-        ('', 'Default'),
-    )
-    CARD_BODY_STYLES = (
-        ('', 'Default'),
-    )
-    CARD_FOOTER_STYLES = (
+    CARD_INNER_STYLES = (
         ('', 'Default'),
     )
 
