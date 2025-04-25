@@ -16,6 +16,7 @@ from django.forms.fields import Field
 from django.utils.deconstruct import deconstructible
 from django.utils.translation import gettext_lazy as _, gettext
 from django.utils.safestring import mark_safe
+from django_select2.forms import ModelSelect2Widget
 from filer.fields.file import AdminFileWidget, FilerFileField
 from filer.fields.image import FilerImageField
 from filer.models.filemodels import File as FilerFileModel
@@ -148,7 +149,12 @@ class PlusModelChoiceField(forms.ModelChoiceField, BaseFieldMixIn):
             raise ValidationError(self.error_messages['invalid_choice'], code='invalid_choice')
         return value
 
+class PageSelect2Widget(ModelSelect2Widget):
+    model = Page
+    search_fields = ['pagecontent_set__title__icontains', 'urls__slug__icontains']
 
+    def label_from_instance(self, obj):
+        return obj.get_absolute_url()
 class PageChoiceIterator(forms.models.ModelChoiceIterator):
     """ Sort pages by absolute url. """
 
@@ -160,7 +166,6 @@ class PageChoiceIterator(forms.models.ModelChoiceIterator):
         for obj in pages:
             yield self.choice(obj)
 
-
 class PageSearchField(PlusModelChoiceField):
     iterator = PageChoiceIterator
 
@@ -170,6 +175,7 @@ class PageSearchField(PlusModelChoiceField):
             queryset = queryset.on_site(get_current_site())
         except Exception:
             pass  # can happen if database is not ready yet
+        kwargs.setdefault('widget', PageSelect2Widget)
         kwargs.setdefault('queryset', queryset)
         super().__init__(*args, **kwargs)
 
