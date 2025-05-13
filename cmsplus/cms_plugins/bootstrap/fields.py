@@ -114,3 +114,12 @@ TEXT_COLOR_FIELD = forms.ChoiceField(
         help_text='Select a text color.',
         widget=ColorPickerWidget()
     )
+
+BORDER_COLOR_FIELD = forms.ChoiceField(
+        choices=cps.EMPTY_CHOICE + cps.COLOR_CHOICES,
+        label="Border Color",
+        required=False,
+        initial="",
+        help_text='Select a border color.',
+        widget=ColorPickerWidget()
+    )
