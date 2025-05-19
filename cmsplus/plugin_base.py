@@ -42,25 +42,26 @@ class PlusPlugin(CMSPluginBase):
         return super().render_change_form(request, context, **kwargs)
 
     def get_fieldsets(self, request, obj=None):
-        declared_fields = list(self.form.declared_fields.keys())
-
         # field for category Extra Settings
         extra_fields = self.extra_settings_fields
+        extra_fieldset = (
+            "Extra Settings",
+            {
+                'classes': ['collapse',],
+                'fields': extra_fields,
+            }
+        )
 
-        # all others below None
-        main_fields = [f for f in declared_fields if f not in extra_fields]
-
-        fieldsets = []
-        if main_fields:
-            fieldsets.append((None, {'fields': main_fields}))
-        if extra_fields:
-            fieldsets.append((
-                "Extra Settings",
-                {
-                    'classes': ['collapse',],
-                    'fields': extra_fields,
-                }
-            ))
+        if hasattr(self, 'fieldsets') and self.fieldsets:
+            return self.fieldsets + (extra_fieldset,)
+        else:
+            # all others below None
+            declared_fields = list(self.form.declared_fields.keys())
+            main_fields = [f for f in declared_fields if f not in extra_fields]
+            fieldsets = []
+            if main_fields:
+                fieldsets.append((None, {'fields': main_fields}))
+            fieldsets.append(extra_fieldset)
         return fieldsets
 
     def render(self, context, instance, placeholder):
