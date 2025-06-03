@@ -91,7 +91,7 @@ class PlusPlugin(CMSPluginBase):
 
     @classmethod
     def get_extra_css(cls, instance):
-        return []
+        return {}
 
     @classmethod
     def sanitize_model(cls, instance):
@@ -183,8 +183,8 @@ class PlusStylePlugin(PlusPlugin):
         }
 
         returns from example:
-            [
-                'default', [
+            {
+                'default': [
                     ('margin-bottom', '7rem'),
                     ('color', 'red'),
                 ],
@@ -195,7 +195,7 @@ class PlusStylePlugin(PlusPlugin):
                 '@media (min-width: 768px)', [
                     ('margin-bottom', '30rem'),
                 ],
-            ]
+            {
         """
 
         def _get_media_and_css_key(key):
