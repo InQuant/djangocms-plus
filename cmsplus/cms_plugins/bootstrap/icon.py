@@ -224,4 +224,5 @@ class IconPlugin(LinkPluginMixin, IconPluginMixin, BootstrapPluginBase):
     def render(self, context, instance, placeholder):
         if instance.icon:
             instance.add_classes(instance.icon)
+            instance.link_attributes['class'] = 'text-decoration-none'
         return super().render(context, instance, placeholder)
