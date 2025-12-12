@@ -126,10 +126,6 @@ class PlusItem(PlusItemMixin, LinkItemMixin, CMSPlugin):
     def config(self, value: dict):  # noqa E999
         self._json = value
 
-    @cached_property
-    def plugin_class(self):
-        return self.get_plugin_class()
-
     @property
     def glossary(self):
         if not self._glossary:

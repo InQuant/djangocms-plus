@@ -1,3 +1,4 @@
+from distutils.command.clean import clean
 import logging
 from django import forms
 from django.utils.translation import gettext_lazy as _
@@ -337,7 +338,6 @@ class PlusImageForm(LinkFormMixin, ImageFormMixin, BootstrapFormBase):
 
     link_is_optional = True
     STYLE_CHOICES = 'MOD_IMAGE_STYLES' # for PlusStyleEntangledFormMixin
-
 
 class ImagePlugin(LinkPluginMixin, BootstrapPluginBase):
     footnote_html = """
