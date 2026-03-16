@@ -170,11 +170,13 @@ class PageSearchField(PlusModelChoiceField):
     iterator = PageChoiceIterator
 
     def __init__(self, *args, **kwargs):
+        from django.apps import apps
         queryset = Page.objects.all()
-        try:
-            queryset = queryset.on_site(get_current_site())
-        except Exception:
-            pass  # can happen if database is not ready yet
+        if apps.ready:
+            try:
+                queryset = queryset.on_site(get_current_site())
+            except Exception:
+                pass  # can happen if database is not ready yet
         kwargs.setdefault('widget', PageSelect2Widget)
         kwargs.setdefault('queryset', queryset)
         super().__init__(*args, **kwargs)
